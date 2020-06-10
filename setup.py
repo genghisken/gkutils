@@ -9,7 +9,7 @@ def readme():
         return f.read()
 
 
-setuptools.setup(
+setup(
     name="gkutils-genghisken", # Replace with your own username
     description='A collection useful utilities',
     long_description=readme(),
