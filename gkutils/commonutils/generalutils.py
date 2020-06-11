@@ -1,3 +1,11 @@
+# encoding: utf-8
+"""
+*General utilities file.*
+
+:Author:
+    Ken W. Smith
+"""
+
 # Utilities file.  The following import are used so often I've placed them at
 # the top of the file.  Other imports are executed only when needed.
 
@@ -26,26 +34,47 @@ FLAGS = {'orphan':          1,
 
 
 def dbConnect(lhost, luser, lpasswd, ldb, lport=3306, quitOnError=True):
-   import MySQLdb
+    """Create a MySQL database connection.
 
-   try:
-      conn = MySQLdb.connect (host = lhost,
-                              user = luser,
-                            passwd = lpasswd,
-                                db = ldb,
-                              port = lport)
-   except MySQLdb.Error as e:
-      print("Error %d: %s" % (e.args[0], e.args[1]))
-      if quitOnError:
-         sys.exit (1)
-      else:
-         conn=None
+    Args:
+        lhost: hostname
+        luser: username
+        lpasswd: password
+        ldb: database name
+        lport: port if not the default one
+        quitOnError:
 
-   return conn
+    Returns:
+        conn: A database connection object
+    """
+    import MySQLdb
+
+    try:
+        conn = MySQLdb.connect (host = lhost,
+                                user = luser,
+                              passwd = lpasswd,
+                                  db = ldb,
+                                port = lport)
+    except MySQLdb.Error as e:
+        print("Error %d: %s" % (e.args[0], e.args[1]))
+        if quitOnError:
+            sys.exit (1)
+        else:
+            conn=None
+
+    return conn
 
 # 2014-07-29 KWS Setup a Logger. Fed up with trawling through print files!! Based on Dave's code.
 
 def setupLogger(yamlConfigFile):
+    """Create a Logger object.
+
+    Args:
+        yamlConfigFile: The YAML config file
+
+    Returns:
+        logger: A logger object
+    """
     import logging
     import logging.config
     import yaml
@@ -71,6 +100,17 @@ def setupLogger(yamlConfigFile):
 
 
 def getDSS2Image (ra, dec, x, y):
+    """Old code to get a DSS2 Image.
+
+    Args:
+        ra:
+        dec:
+        x:
+        y:
+
+    Returns:
+        soup: A BeautifulSoup object
+    """
     from BeautifulSoup import BeautifulSoup
     import urllib.request, urllib.error, urllib.parse
     import urllib.request, urllib.parse, urllib.error
@@ -103,6 +143,15 @@ def getDSS2Image (ra, dec, x, y):
 
 
 def bin(x, digits=0):
+    """Get the binary for a decimal input.
+
+    Args:
+        x: Decimal input
+        digits: Number of digits for padding.
+
+    Returns:
+        A binary string, padded if necessary.
+    """
     oct2bin = ['000','001','010','011','100','101','110','111']
     binstring = [oct2bin[int(n)] for n in oct(x).replace('L','')]
     return ''.join(binstring).lstrip('0').zfill(digits)
@@ -115,6 +164,16 @@ def bin(x, digits=0):
 #               through the coordinate.  You want accuracy - just request
 #               more digits.
 def ra_to_sex (ra, delimiter = ':', decimalPlaces = 2):
+   """Decimal RA to Sexagesimal converter.
+
+   Args:
+        ra: Right Ascension
+        delimiter: Optional delimiter - assumed to be colon by default
+        decimalPlaces: Number of decimal places to calculate onto returned result.
+
+   Returns:
+        RA string in sexagesimal
+   """
 
    if decimalPlaces < 2:
       decimalPlaces = 2
@@ -146,6 +205,13 @@ def ra_to_sex (ra, delimiter = ':', decimalPlaces = 2):
 #               through the coordinate.  You want accuracy - just request
 #               more digits.
 def dec_to_sex (dec, delimiter = ':', decimalPlaces = 1):
+   """dec_to_sex.
+
+   Args:
+        dec:
+        delimiter:
+        decimalPlaces:
+   """
 
    if decimalPlaces < 1:
       decimalPlaces = 1
@@ -171,6 +237,15 @@ def dec_to_sex (dec, delimiter = ':', decimalPlaces = 1):
 
 
 def coords_dec_to_sex (ra, dec, delimiter = ':', decimalPlacesRA = 2, decimalPlacesDec = 1):
+   """coords_dec_to_sex.
+
+   Args:
+        ra:
+        dec:
+        delimiter:
+        decimalPlacesRA:
+        decimalPlacesDec:
+   """
 
    return(ra_to_sex(ra,delimiter, decimalPlaces = decimalPlacesRA), dec_to_sex(dec,delimiter, decimalPlacesDec))
 
@@ -202,11 +277,23 @@ def getOffset(ra1, dec1, ra2, dec2):
    return offset
 
 def ra_in_decimal_hours(ra):
+   """ra_in_decimal_hours.
+
+   Args:
+        ra:
+   """
 
    return(ra/15.0)
 
 # Base-26 converter - for local QUB PS1 IDs
 def baseN(num, base=26, numerals="abcdefghijklmnopqrstuvwxyz"):
+   """baseN.
+
+   Args:
+        num:
+        base:
+        numerals:
+   """
    if num == 0:
        return numerals[0]
 
@@ -224,6 +311,11 @@ def baseN(num, base=26, numerals="abcdefghijklmnopqrstuvwxyz"):
 
 # Base 26 number padded with base 26 zeroes (a)
 def base26(num):
+   """base26.
+
+   Args:
+        num:
+   """
    if num < 0:
       raise ValueError('Number must be positive or zero')
 
@@ -264,6 +356,13 @@ class DictLookup(dict):
 
 
 def getFlagDefs(flags, dictionary, delimiter = ' + '):
+   """getFlagDefs.
+
+   Args:
+        flags:
+        dictionary:
+        delimiter:
+   """
    flagDefs = []
 
    lookup = DictLookup(dictionary)
@@ -285,24 +384,44 @@ def getFlagDefs(flags, dictionary, delimiter = ' + '):
 # 2017-04-24 KWS We need to keep track of leap seconds.
 #                Stub code installed here.
 def getLeapSeconds(dateTime):
+   """getLeapSeconds.
+
+   Args:
+        dateTime:
+   """
    leapSeconds = 0
    return leapSeconds
 
 def getCurrentMJD():
+   """getCurrentMJD.
+   """
    jd = time.time()/86400.0+2440587.5
    mjd = jd-2400000.5
    return mjd
 
 def getCurrentJD():
+   """getCurrentJD.
+   """
    jd = time.time()/86400.0+2440587.5
    return jd
 
 def getJDfromMJD(mjd):
+   """getJDfromMJD.
+
+   Args:
+        mjd:
+   """
    jd = mjd + 2400000.5
    return jd
    
 
 def getDateFromMJD(mjd, fitsFormat=False):
+   """getDateFromMJD.
+
+   Args:
+        mjd:
+        fitsFormat:
+   """
    unixtime = (mjd + 2400000.5 - 2440587.5) * 86400.0;
    theDate = datetime.utcfromtimestamp(unixtime)
    stringDate = theDate.strftime("%Y-%m-%d %H:%M:%S")
@@ -314,6 +433,11 @@ def getDateFromMJD(mjd, fitsFormat=False):
 
 # 2012-03-26 KWS Added function to convert from date to MJD
 def getMJDFromSqlDate(sqlDate):
+   """getMJDFromSqlDate.
+
+   Args:
+        sqlDate:
+   """
    mjd = None
 
    try:
@@ -329,6 +453,11 @@ def getMJDFromSqlDate(sqlDate):
    return mjd
 
 def getUnixTimeFromSQLDate(sqlDate):
+   """getUnixTimeFromSQLDate.
+
+   Args:
+        sqlDate:
+   """
    unixTime = None
 
    try:
@@ -343,6 +472,11 @@ def getUnixTimeFromSQLDate(sqlDate):
    return unixTime
 
 def getSQLDateFromUnixTime(unixTime):
+   """getSQLDateFromUnixTime.
+
+   Args:
+        unixTime:
+   """
    sqlDate = None
    try:
       sqlDate = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(unixTime)))
@@ -352,6 +486,13 @@ def getSQLDateFromUnixTime(unixTime):
    return sqlDate
 
 def getDateFractionMJD(mjd, delimiter = ' ', decimalPlaces = 2):
+   """getDateFractionMJD.
+
+   Args:
+        mjd:
+        delimiter:
+        decimalPlaces:
+   """
    floatWidth = decimalPlaces + 3 # always have 00.00 or 00.000 or 00.0000, etc
    unixtime = (mjd + 2400000.5 - 2440587.5) * 86400.0;
    theDate = datetime.utcfromtimestamp(unixtime)
@@ -363,6 +504,13 @@ def getDateFractionMJD(mjd, delimiter = ' ', decimalPlaces = 2):
 
 
 def sexToDec (sexv, ra = False, delimiter = ':'):
+   """sexToDec.
+
+   Args:
+        sexv:
+        ra:
+        delimiter:
+   """
    # Note that the approach below only works because there are only two colons
    # in a sexagesimal representation.
    degrees = 0
@@ -402,6 +550,13 @@ def sexToDec (sexv, ra = False, delimiter = ':'):
 
 
 def coords_sex_to_dec (ra, dec, delimiter = ':'):
+   """coords_sex_to_dec.
+
+   Args:
+        ra:
+        dec:
+        delimiter:
+   """
 
    return(sexToDec(ra, ra=True ,delimiter=delimiter), sexToDec(dec, ra=False, delimiter=delimiter))
 
@@ -409,6 +564,18 @@ def coords_sex_to_dec (ra, dec, delimiter = ':'):
 # A wrapper for the C++ ConeSearch utility.  In lieu of creating a pure Python facility.
 # Note that this is desiged to lookup IDs that are INTEGERS.
 def wrapConeSearch(dbuser, dbpass, dbname, dbhost, tablename, ra, dec, radius):
+   """wrapConeSearch.
+
+   Args:
+        dbuser:
+        dbpass:
+        dbname:
+        dbhost:
+        tablename:
+        ra:
+        dec:
+        radius:
+   """
    if dbpass == "":
       dbpass = """ "" """
 
@@ -451,6 +618,12 @@ def wrapConeSearch(dbuser, dbpass, dbname, dbhost, tablename, ra, dec, radius):
 
 
 def calculate_cartesians(ra, dec):
+   """calculate_cartesians.
+
+   Args:
+        ra:
+        dec:
+   """
    ra = math.radians(ra)
    dec = math.radians(dec)
    cos_dec = math.cos(dec)
@@ -648,6 +821,18 @@ CAT_ID_RA_DEC_COLS = {
 # 2012-02-02 KWS Cone Searcher based on the new SWIG C++ code.  Need speed.
 # 2012-03-25 KWS Added django so that we can call the Django dict cursor if necessary.
 def coneSearch(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, conn = None, django = False):
+   """coneSearch.
+
+   Args:
+        ra:
+        dec:
+        radius:
+        tableName:
+        htmLevel:
+        queryType:
+        conn:
+        django:
+   """
 
    # 2012-02-02 KWS Require database connections for cone searching
    import MySQLdb
@@ -754,6 +939,18 @@ def coneSearch(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, con
 
 # 2016-02-02 KWS Pure HTM conesearch. Does NOT use unit cartesian coords.
 def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, conn = None, django = False):
+   """coneSearchHTM.
+
+   Args:
+        ra:
+        dec:
+        radius:
+        tableName:
+        htmLevel:
+        queryType:
+        conn:
+        django:
+   """
 
    # 2012-02-02 KWS Require database connections for cone searching
    import MySQLdb
@@ -857,6 +1054,13 @@ def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, 
 #                the HTM ID for a given (decimal) RA and DEC pair.
 
 def htmID(ra, dec, htmLevel = 16):
+   """htmID.
+
+   Args:
+        ra:
+        dec:
+        htmLevel:
+   """
    id = None
    if htmLevel == 16 or htmLevel == 20:
       import htmCircle
@@ -879,6 +1083,15 @@ def htmID(ra, dec, htmLevel = 16):
 # 2012-06-01 KWS Picked out MJD-OBS, Filename and Filter
 
 def bruteForceCMFConeSearch(filename, coordinatePairs, radius, delimiter = '\t', fitsInfo = None):
+   """bruteForceCMFConeSearch.
+
+   Args:
+        filename:
+        coordinatePairs:
+        radius:
+        delimiter:
+        fitsInfo:
+   """
    import pyfits as p
 
    h = t = cols = None
@@ -1019,6 +1232,15 @@ def readATLASddetHeader(filename, delimiter = '= ', useOrderedDict = False):
 # 2017-05-05 KWS Allow use of OrderedDict instead of python dict. Useful when we want to order
 #                the output by the original field order.
 def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = None, useOrderedDict = False):
+   """readGenericDataFile.
+
+   Args:
+        filename:
+        delimiter:
+        skipLines:
+        fieldnames:
+        useOrderedDict:
+   """
    import csv
    from collections import OrderedDict
 
@@ -1222,6 +1444,12 @@ EcliptictoJ2000 = [1.0, 0.0, 0.0,
 
 # returns a radec array of two elements
 def transform ( coords, matrix ):
+   """transform.
+
+   Args:
+        coords:
+        matrix:
+   """
    pi = math.pi
 
    r0 = calculate_cartesians(coords[0], coords[1]) 
@@ -1255,6 +1483,13 @@ def transform ( coords, matrix ):
 #                from http://www.astro.caltech.edu/~eran/MATLAB/Map.html
 
 def pr_hammer(Long,Lat,R):
+   """pr_hammer.
+
+   Args:
+        Long:
+        Lat:
+        R:
+   """
    Long = math.radians(Long)
    Lat = math.radians(Lat)
 
@@ -1268,6 +1503,11 @@ def pr_hammer(Long,Lat,R):
 #                which is itself based on Ned Wright's Cosmology Calculator code.
 
 def redshiftToDistance(z):
+   """redshiftToDistance.
+
+   Args:
+        z:
+   """
 
    # Cosmological Parameters (to be changed if required)
    WM = 0.3           # Omega_matter
@@ -1346,6 +1586,14 @@ BAD_SERVER_ADDRESS = 2
 HTTP_ERROR         = 3
 
 def getRemoteWebPage(url, username=None, password=None, realm=None):
+   """getRemoteWebPage.
+
+   Args:
+        url:
+        username:
+        password:
+        realm:
+   """
    import urllib.request, urllib.error, urllib.parse
 
    responseErrorCode = OK
@@ -1387,9 +1635,20 @@ def getRemoteWebPage(url, username=None, password=None, realm=None):
 
 # 2012-10-04 KWS Moved enum to utils.py
 def enum(**enums):
+   """enum.
+
+   Args:
+        enums:
+   """
    return type('Enum', (), enums)
 
 def ra_dec_id(ra, dec):
+   """ra_dec_id.
+
+   Args:
+        ra:
+        dec:
+   """
    id = 1000000000000000000
 
    # Calculation from Decimal Degrees:
@@ -1429,6 +1688,11 @@ def ra_dec_id(ra, dec):
 class Struct:
     """Create an object from a dictionary. Ensures compatibility between raw scripted queries and Django queries."""
     def __init__(self, **entries): 
+        """__init__.
+
+        Args:
+            entries:
+        """
         self.__dict__.update(entries)
 
 
@@ -1546,6 +1810,11 @@ def getColour(cData1, cData2, dateDiffLimit, interpolate = False):
 
 
 def getColourStats(colourData):
+    """getColourStats.
+
+    Args:
+        colourData:
+    """
 
     import numpy as n
 
@@ -1569,6 +1838,14 @@ def getColourStats(colourData):
 #                is a list of dictionaries with at least "RA" and "DEC" keys.
 
 def calcRMS(objectInfo, avgRa, avgDec, rms = None):
+   """calcRMS.
+
+   Args:
+        objectInfo:
+        avgRa:
+        avgDec:
+        rms:
+   """
    sep = sepsq = 0
 
    for objectRow in objectInfo:
@@ -1591,6 +1868,11 @@ def calcRMS(objectInfo, avgRa, avgDec, rms = None):
 
 
 def calculateRMSScatter(objectInfo):
+   """calculateRMSScatter.
+
+   Args:
+        objectInfo:
+   """
 
    ### PRINT DETECTION INFORMATION & DETERMINE RMS SEPARATION FROM AVERAGE POSITION ###
    # 2017-10-30 KWS Set initial variables to zero, not equal to each other = 0.
@@ -1643,6 +1925,14 @@ class SetupMySQLSSHTunnel:
 
 
     def __init__(self, sshUser, gateway, internalIP, sshPort):
+        """__init__.
+
+        Args:
+            sshUser:
+            gateway:
+            internalIP:
+            sshPort:
+        """
         # Check that the tunnel is up.  If not, setup the tunnel.
         # NOTE: The public key of the user running this code on this machine must be installed on Starbase
         import time, subprocess
@@ -1964,6 +2254,12 @@ def xy2skyList(filename, coordList):
 
 
 def readPhotpipeDCMPFile(filename, xy2skyConvertByList = True):
+   """readPhotpipeDCMPFile.
+
+   Args:
+        filename:
+        xy2skyConvertByList:
+   """
    #from astropy.wcs import wcs # We may need to modify which wcs library we use. This one is part of Ureka.
    # 2014-09-12 KWS Yet again had to try another wcs solution.  This time resort to external xy2sky.
    #import pywcs as wcs # pywcs from STScI, installed via PIP.
@@ -2164,6 +2460,15 @@ ATLAS_CONESEARCH_RADIUS = 13888.7 # (i.e. sqrt(5280 * 1.86^2 + 5280 * 1.86^2) )
 ATLAS_HALF_WIDTH = 5280 * 1.86 # (also = 13888.7 * cos(45) )
 
 def isObjectInsideATLASFootprint(objectRA, objectDec, fpRA, fpDec, separation = None):
+    """isObjectInsideATLASFootprint.
+
+    Args:
+        objectRA:
+        objectDec:
+        fpRA:
+        fpDec:
+        separation:
+    """
 
     if separation is None:
         # We need to calculate the angular separation. This is expensive, so if
@@ -2193,6 +2498,11 @@ def isObjectInsideATLASFootprint(objectRA, objectDec, fpRA, fpDec, separation = 
 # Add a grammatical join. Used by the Transient name server when adding lists of users
 # to the comments section.
 def grammarJoin(words):
+    """grammarJoin.
+
+    Args:
+        words:
+    """
     return reduce(lambda x, y: x and x + ' and ' + y or y,
                  (', '.join(words[:-1]), words[-1])) if words else ''
 
@@ -2216,6 +2526,11 @@ NAME_REGEX = "^(AT|SN|ATLAS|ASASSN-|ZTF|PS([1][\-]){0,1}){0,1} {0,1}([2][0]){0,1
 NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
 def getObjectNamePortion(inputString):
+    """getObjectNamePortion.
+
+    Args:
+        inputString:
+    """
     # E.g. if the object name is '2016ffx' will return 16ffx
     #      If the object name is 'ATLAS16abc' will return 16abc
     namePortion = None
@@ -2230,6 +2545,11 @@ def getObjectNamePortion(inputString):
 # 2019-04-30 KWS Changed the order of the match test. Try decimal then sexagesimal.
 #                Also check the values of each sexagesimal field.
 def getCoordsAndSearchRadius(inputString):
+    """getCoordsAndSearchRadius.
+
+    Args:
+        inputString:
+    """
     coords = {}
     ra = None
     dec = None
@@ -2281,10 +2601,21 @@ def getCoordsAndSearchRadius(inputString):
 # Return a string representing a float to digits decimal places, truncated.
 # Used when we need to truncate an MJD to 3 decimal places for filename.
 def truncate(f, digits):
+    """truncate.
+
+    Args:
+        f:
+        digits:
+    """
     return ("{:.30f}".format(f))[:-30+digits]
 
 # 2017-11-02 KWS Quick and dirty code to clean options dictionary as extracted by docopt.
 def cleanOptions(options):
+    """cleanOptions.
+
+    Args:
+        options:
+    """
     cleanedOpts = {}
     for k,v in options.items():
         # Get rid of -- and <> from opts
@@ -2293,6 +2624,11 @@ def cleanOptions(options):
     return cleanedOpts
 
 def nullValue(value):
+   """nullValue.
+
+   Args:
+        value:
+   """
    returnValue = None
 
    if value and value.strip():
@@ -2302,6 +2638,11 @@ def nullValue(value):
 
 
 def floatValue(value):
+   """floatValue.
+
+   Args:
+        value:
+   """
    import numpy as n
    returnValue = None
 
@@ -2317,6 +2658,11 @@ def floatValue(value):
 
 
 def intValue(value):
+   """intValue.
+
+   Args:
+        value:
+   """
    returnValue = None
 
    if value:
@@ -2332,6 +2678,11 @@ def intValue(value):
 
 # 2019-01-29 KWS Added "which" command.
 def which(filename):
+    """which.
+
+    Args:
+        filename:
+    """
     for path in os.environ["PATH"].split(os.pathsep):
         fullpath = os.path.join(path, filename)
         if os.path.exists(fullpath) and os.access(fullpath, os.X_OK):
@@ -2339,6 +2690,11 @@ def which(filename):
     return None
 
 def htmTriangleArea(level):
+    """htmTriangleArea.
+
+    Args:
+        level:
+    """
     skyInSqDegrees = 4.0 * math.pi * (180.0/math.pi)**2
     skyInSqArcsec = skyInSqDegrees * 3600.0 ** 2
     triangleArea = skyInSqArcsec/(8*4**level)
