@@ -838,7 +838,7 @@ def coneSearch(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, con
    import MySQLdb
 
    # 2012-02-02 KWS Introduced a new SWIG htmCircle library for cone searching
-   import htmCircle
+   from gkhtm import _gkhtm as htmCircle
 
    # Attempt a cone search of the given tableName.  Use internal models if conn
    # is None, otherwise use a given database connection (allows it to be called
@@ -956,7 +956,7 @@ def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, 
    import MySQLdb
 
    # 2012-02-02 KWS Introduced a new SWIG htmCircle library for cone searching
-   import htmCircle
+   from gkhtm import _gkhtm as htmCircle
 
    # Attempt a cone search of the given tableName.  Use internal models if conn
    # is None, otherwise use a given database connection (allows it to be called
@@ -1063,7 +1063,7 @@ def htmID(ra, dec, htmLevel = 16):
    """
    id = None
    if htmLevel == 16 or htmLevel == 20:
-      import htmCircle
+      from gkhtm import _gkhtm as htmCircle
 
       try:
          id = htmCircle.htmID(htmLevel, ra, dec)
@@ -1092,7 +1092,7 @@ def bruteForceCMFConeSearch(filename, coordinatePairs, radius, delimiter = '\t',
         delimiter:
         fitsInfo:
    """
-   import pyfits as p
+   from astropy.io import fits as p
 
    h = t = cols = None
    if fitsInfo is None:
@@ -1384,7 +1384,7 @@ def bruteForceGenericConeSearch(filename, coordinatePairs, radius, delimiter = '
 def generateTSVfromCMF(filename, delimiter='\t'):
    """Generate a TSV file from a CMF file."""
 
-   import pyfits as p
+   from astropy.io import fits as p
 
    h = t = cols = None
    h = p.open(filename)
@@ -2264,7 +2264,7 @@ def readPhotpipeDCMPFile(filename, xy2skyConvertByList = True):
    # 2014-09-12 KWS Yet again had to try another wcs solution.  This time resort to external xy2sky.
    #import pywcs as wcs # pywcs from STScI, installed via PIP.
    import csv, io
-   import pyfits as pf
+   from astropy.io import fits as pf
 
    h = pf.open(filename)
    h.verify('fix') # Non-standard keywords.  Tell PyFITS to fix them.  Can't use WCS without this.
