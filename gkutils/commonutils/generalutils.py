@@ -938,8 +938,8 @@ def coneSearch(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, con
 
 
 # 2016-02-02 KWS Pure HTM conesearch. Does NOT use unit cartesian coords.
-def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, conn = None, django = False):
-   """coneSearchHTM.
+def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, conn = None, django = False, prefix = "htm", suffix = "ID"):
+   """HTM only cone search.  Assumes a column in the catalogue which by default is called htm<n>ID where <n> is the HTM level.
 
    Args:
         ra:
@@ -950,6 +950,8 @@ def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, 
         queryType:
         conn:
         django:
+        prefix: HTM column prefix - default: "htm"
+        suffix: HTM column suffix - default: "ID"
    """
 
    # 2012-02-02 KWS Require database connections for cone searching
@@ -988,7 +990,12 @@ def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, 
    except KeyError as e:
       return "Table %s not recognised." % tableName, []
 
-   htmWhereClause = htmCircle.htmCircleRegion(htmLevel, ra, dec, radius)
+   # 2020-07-08 KWS htmCircleRegion has been modified to take two optional paramaters. Because
+   #                of necessity to maintain older SWIG version, parameters cannot be named,
+   #                but prefix and suffix are completely optional. Default values are htm and ID
+   #                if omitted. If you need to pass the suffix only, you MUST specify the prefix
+   #                as well. If you don't want the suffix, pass prefix and "".
+   htmWhereClause = htmCircle.htmCircleRegion(htmLevel, ra, dec, radius, prefix, suffix)
 
    # We now have a query that returns a SUPERSET.  We need to trim the superset once
    # the query is done.
