@@ -2,13 +2,14 @@
 """Is object in the list of ATLAS exposures?
 
 Usage:
-  %s <atlasCentresFile> <inputCoordsFile> 
+  %s <atlasCentresFile> <inputCoordsFile> [--searchradius=<searchradius>] 
   %s (-h | --help)
   %s --version
 
 Options:
-  -h --help                    Show this screen.
-  --version                    Show version.
+  -h --help                      Show this screen.
+  --version                      Show version.
+  --searchradius=<searchradius>  Cone search radius in degrees. [default: 7.71]
 
 
 Example:
@@ -34,6 +35,14 @@ def main(argv = None):
     atlasCentres = readGenericDataFile(options.atlasCentresFile, delimiter='\t')
     inputCoords = readGenericDataFile(options.inputCoordsFile, delimiter=',')
 
+    radius = 7.71
+    try:
+        radius = float(options.searchradius)
+
+    except ValueError as e:
+        pass
+
+
     for row in inputCoords:
         try:
             ra = float(row['ra'])
@@ -41,10 +50,9 @@ def main(argv = None):
         except ValueError as e:
             ra, dec = coords_sex_to_dec(row['ra'], row['dec'])
 
-        #header, results = bruteForceGenericConeSearch(options.atlasCentresFile, [[ra, dec]], 7.71*3600.0, raIndex = 'ra_deg', decIndex = 'dec_deg')
-        header, results = bruteForceGenericConeSearch(options.atlasCentresFile, [[ra, dec]], 20*3600.0, raIndex = 'ra_deg', decIndex = 'dec_deg')
+        header, results = bruteForceGenericConeSearch(options.atlasCentresFile, [[ra, dec]], radius*3600.0, raIndex = 'ra_deg', decIndex = 'dec_deg')
         for r in results:
-            print (r)
+            print (row['name'], r)
 
     # Alternatively - try a simple check to see which exposures our objects lie within.
     for row in inputCoords:
