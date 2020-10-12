@@ -19,7 +19,7 @@ Example:
 import sys
 __doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
-import os, MySQLdb, shutil, re
+import os, shutil, re
 from gkutils.commonutils import Struct, cleanOptions, readGenericDataFile, coords_sex_to_dec, bruteForceGenericConeSearch, isObjectInsideATLASFootprint
 
 def main(argv = None):
@@ -43,6 +43,7 @@ def main(argv = None):
         pass
 
 
+    print("Cone Search around the object for ATLAS exposures.")
     for row in inputCoords:
         try:
             ra = float(row['ra'])
@@ -53,8 +54,10 @@ def main(argv = None):
         header, results = bruteForceGenericConeSearch(options.atlasCentresFile, [[ra, dec]], radius*3600.0, raIndex = 'ra_deg', decIndex = 'dec_deg')
         for r in results:
             print (row['name'], r)
+    print()
 
     # Alternatively - try a simple check to see which exposures our objects lie within.
+    print("ATLAS exposures that contain the object.")
     for row in inputCoords:
         try:
             ra = float(row['ra'])
