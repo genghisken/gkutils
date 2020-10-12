@@ -2,14 +2,15 @@
 """Is object in the list of ATLAS exposures?
 
 Usage:
-  %s <atlasCentresFile> <inputCoordsFile> [--searchradius=<searchradius>] 
+  %s <atlasCentresFile> <inputCoordsFile> [--searchradius=<searchradius>] [--footprints]
   %s (-h | --help)
   %s --version
 
 Options:
   -h --help                      Show this screen.
   --version                      Show version.
-  --searchradius=<searchradius>  Cone search radius in degrees. [default: 7.71]
+  --searchradius=<searchradius>  Cone search radius in degrees. [default: 3.86]
+  --footprints                   Give me the ATLAS footprints that overlap this RA and Dec. (Otherwise do a cone search.)
 
 
 Example:
@@ -21,6 +22,9 @@ __doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
 import os, shutil, re
 from gkutils.commonutils import Struct, cleanOptions, readGenericDataFile, coords_sex_to_dec, bruteForceGenericConeSearch, isObjectInsideATLASFootprint
+
+atlas_regex = '([12]a)([56][0-9]{4})o([0-9]{4})([A-Za-z])'
+atlas_regex_compiled = re.compile(atlas_regex)
 
 def main(argv = None):
     opts = docopt(__doc__, version='0.1')
@@ -35,39 +39,45 @@ def main(argv = None):
     atlasCentres = readGenericDataFile(options.atlasCentresFile, delimiter='\t')
     inputCoords = readGenericDataFile(options.inputCoordsFile, delimiter=',')
 
-    radius = 7.71
+    radius = 3.86
     try:
         radius = float(options.searchradius)
 
     except ValueError as e:
         pass
 
+    if options.footprints:
+        for row in inputCoords:
+            try:
+                ra = float(row['ra'])
+                dec = float(row['dec'])
+            except ValueError as e:
+                ra, dec = coords_sex_to_dec(row['ra'], row['dec'])
 
-    print("Cone Search around the object for ATLAS exposures.")
-    for row in inputCoords:
-        try:
-            ra = float(row['ra'])
-            dec = float(row['dec'])
-        except ValueError as e:
-            ra, dec = coords_sex_to_dec(row['ra'], row['dec'])
+            for r in atlasCentres:
+                if isObjectInsideATLASFootprint(ra, dec, float(r['ra_deg']), float(r['dec_deg'])):
+                    reSearch = atlas_regex_compiled.search(r['expname'])
+                    if reSearch:
+                        camera = reSearch.group(1)
+                        mjd = reSearch.group(2)
+                        expno = reSearch.group(3)
+                        filt = reSearch.group(4)
+                        print(row['name'], camera, mjd, r['expname'])
+                    else:
+                        print(row['name'], r['expname'])
 
-        header, results = bruteForceGenericConeSearch(options.atlasCentresFile, [[ra, dec]], radius*3600.0, raIndex = 'ra_deg', decIndex = 'dec_deg')
-        for r in results:
-            print (row['name'], r)
-    print()
+    else:
+        for row in inputCoords:
+            try:
+                ra = float(row['ra'])
+                dec = float(row['dec'])
+            except ValueError as e:
+                ra, dec = coords_sex_to_dec(row['ra'], row['dec'])
 
-    # Alternatively - try a simple check to see which exposures our objects lie within.
-    print("ATLAS exposures that contain the object.")
-    for row in inputCoords:
-        try:
-            ra = float(row['ra'])
-            dec = float(row['dec'])
-        except ValueError as e:
-            ra, dec = coords_sex_to_dec(row['ra'], row['dec'])
+            header, results = bruteForceGenericConeSearch(options.atlasCentresFile, [[ra, dec]], radius*3600.0, raIndex = 'ra_deg', decIndex = 'dec_deg')
+            for r in results:
+                print (row['name'], r)
 
-        for r in atlasCentres:
-            if isObjectInsideATLASFootprint(ra, dec, float(r['ra_deg']), float(r['dec_deg'])):
-                print(row['name'], r['expname'])
 
 
         
