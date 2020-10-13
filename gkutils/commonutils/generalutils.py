@@ -152,8 +152,9 @@ def bin(x, digits=0):
     Returns:
         A binary string, padded if necessary.
     """
+    # 2020-10-13 KWS Python 3 returns octal numbers with a prefix of 'o'. Need to remove this.
     oct2bin = ['000','001','010','011','100','101','110','111']
-    binstring = [oct2bin[int(n)] for n in oct(x).replace('L','')]
+    binstring = [oct2bin[int(n)] for n in oct(x).replace('L','').replace('o','')]
     return ''.join(binstring).lstrip('0').zfill(digits)
 
 
