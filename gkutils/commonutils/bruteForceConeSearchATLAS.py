@@ -2,7 +2,7 @@
 """Is object in the list of ATLAS exposures?
 
 Usage:
-  %s <atlasCentresFile> <inputCoordsFile> [--searchradius=<searchradius>] [--footprints]
+  %s <atlasCentresFile> <inputCoordsFile> [--searchradius=<searchradius>] [--footprints] [--red]
   %s (-h | --help)
   %s --version
 
@@ -11,6 +11,7 @@ Options:
   --version                      Show version.
   --searchradius=<searchradius>  Cone search radius in degrees. [default: 3.86]
   --footprints                   Give me the ATLAS footprints that overlap this RA and Dec. (Otherwise do a cone search.)
+  --red                          Give me the full ATLAS reduced file locations.
 
 
 Example:
@@ -23,7 +24,7 @@ from docopt import docopt
 import os, shutil, re
 from gkutils.commonutils import Struct, cleanOptions, readGenericDataFile, coords_sex_to_dec, bruteForceGenericConeSearch, isObjectInsideATLASFootprint
 
-atlas_regex = '([12]a)([56][0-9]{4})o([0-9]{4})([A-Za-z])'
+atlas_regex = '(0[12]a)([56][0-9]{4})o([0-9]{4})([A-Za-z])'
 atlas_regex_compiled = re.compile(atlas_regex)
 
 def main(argv = None):
@@ -32,9 +33,6 @@ def main(argv = None):
 
     # Use utils.Struct to convert the dict into an object for compatibility with old optparse code.
     options = Struct(**opts)
-
-    print(options.atlasCentresFile)
-    print(options.inputCoordsFile)
 
     atlasCentres = readGenericDataFile(options.atlasCentresFile, delimiter='\t')
     inputCoords = readGenericDataFile(options.inputCoordsFile, delimiter=',')
@@ -62,7 +60,10 @@ def main(argv = None):
                         mjd = reSearch.group(2)
                         expno = reSearch.group(3)
                         filt = reSearch.group(4)
-                        print(row['name'], camera, mjd, r['expname'])
+                        red = ''
+                        if options.red:
+                            red = '/atlas/red/' + camera + '/' + mjd + '/' + r['expname'] + '.fits.fz'
+                        print(row['name'], red)
                     else:
                         print(row['name'], r['expname'])
 
@@ -76,7 +77,21 @@ def main(argv = None):
 
             header, results = bruteForceGenericConeSearch(options.atlasCentresFile, [[ra, dec]], radius*3600.0, raIndex = 'ra_deg', decIndex = 'dec_deg')
             for r in results:
-                print (row['name'], r)
+                exps = r.split()
+                reSearch = atlas_regex_compiled.search(exps[1])
+                if reSearch:
+                    camera = reSearch.group(1)
+                    mjd = reSearch.group(2)
+                    expno = reSearch.group(3)
+                    filt = reSearch.group(4)
+                    red = ''
+                    if options.red:
+                        red = '/atlas/red/' + camera + '/' + mjd + '/' + exps[1] + '.fits.fz'
+                        print (row['name'], red, "%.2f" % (float(exps[5])/3600.0))
+                    else:
+                        print (row['name'], exps[1], "%.2f" % (float(exps[5])/3600.0))
+                else:
+                    print (row['name'], exps[1], "%.2f" % (float(exps[5])/3600.0))
 
 
 
