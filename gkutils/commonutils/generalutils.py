@@ -1058,6 +1058,57 @@ def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, 
 
    return message, results
 
+
+def coneSearchHTMCassandra (cassandraSession, ra, dec, radius, tableName, racol = 'ra', deccol = 'dec', refineResults = True):
+    """coneSearchHTMCassandra.
+
+    Args:
+        cassandraSession:  Connection to Cassandra cluster
+        ra:
+        dec:
+        radius:
+        tableName:
+    """
+
+    from gkhtm._gkhtm import htmCircleRegionCassandra
+
+    if ':' in str(ra):
+        ra = sexToDec(ra, ra=True)
+    if ':' in str(dec):
+        dec = sexToDec(dec, ra=False)
+
+    ra = float(ra)
+    dec = float(dec)
+
+    # There will often be more than one WHERE clause. This is because Cassandra can't do OR statements.
+    # Hence we must query multiple times to get the complete dataset.
+    whereClauses = htmCircleRegionCassandra(ra, dec, radius)
+
+    resultSet = []
+    if len(whereClauses) > 0:
+        for w in whereClauses:
+            fullQuery = "select * from %s " % (tableName) + w
+
+            result = None
+            try:
+                result = cassandraSession.execute(fullQuery)
+            except Exception as e:
+                print(e)
+
+            if result:
+                resultSet += list(result)
+
+        if resultSet and refineResults:
+            refinedResultSet = []
+            for row in resultSet:
+                separation = getAngularSeparation(ra, dec, row[racol], row[deccol])
+                if separation < radius:
+                    refinedResultsSet.append(row)
+            resultSet = refinedResultSet
+
+    return resultSet
+
+
 # 2012-07-31 KWS Added new htmID code to the SWIG library.  This is a simple wrapper for returning
 #                the HTM ID for a given (decimal) RA and DEC pair.
 
