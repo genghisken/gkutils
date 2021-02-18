@@ -1099,11 +1099,12 @@ def coneSearchHTMCassandra (cassandraSession, ra, dec, radius, tableName, racol 
                 resultSet += list(result)
 
         if resultSet and refineResults:
+            # The following code only works if cassandra has specified session.row_factory = dict_factory
             refinedResultSet = []
             for row in resultSet:
                 separation = getAngularSeparation(ra, dec, row[racol], row[deccol])
                 if separation < radius:
-                    refinedResultsSet.append(row)
+                    refinedResultSet.append(row)
             resultSet = refinedResultSet
 
     return resultSet
