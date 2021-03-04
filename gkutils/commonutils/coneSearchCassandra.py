@@ -1,7 +1,7 @@
 """Query cassandra by RA and dec. The coords variable should be RA and dec, comma separated with NO SPACE. (To facilitate negative declinations.)
 
 Usage:
-  %s <coords> <radius>
+  %s <coords> <radius> [--coordsfromfile]
   %s (-h | --help)
   %s --version
 
@@ -10,6 +10,7 @@ Options:
   --version                    Show version.
   --low=<n>                    Value of ndet below which we regard data as good [default: 250].
   --high=<n>                   Value of ndet above which we regard data as bad [default: 2000].
+  --coordsfromfile             Treat the coordinates parameter as a file of coordinates.
 
 """
 import sys
@@ -72,19 +73,24 @@ def main(argv = None):
     # ATLAS17lvn - bright foreground star
     #ra = 68.75953
     #dec = -14.22797
-    ra = float(options.coords.split(',')[0])
-    dec = float(options.coords.split(',')[1])
     
     cluster = Cluster(host)
     session = cluster.connect()
     session.row_factory = dict_factory
     session.set_keyspace(keyspace)
-    
-    data = coneSearchHTMCassandra(session, ra, dec, radius, table, refineResults = True)
-    if data:
-        for row in data:
-            #print (row)
-            print (row['mjd'], "%.2f" % row['m'], "%.2f" % row['dminst'], row['filter'], "%.6f" % row['ra'], "%.6f" % row['dec'], row['expname'])
+    coordslist = []
+
+    if coordsfromfile:
+        coordslist = readGenericDataFile(options.coords, delimiter=',')
+    else:
+        coordslist.append({'ra': options.coords.split(',')[0], 'dec': options.coords.split(',')[1]})
+
+    for c in coordslist:
+        data = coneSearchHTMCassandra(session, c['ra'], c['dec'], radius, table, refineResults = True)
+        if data:
+            for row in data:
+                #print (row)
+                print (row['mjd'], "%.2f" % row['m'], "%.2f" % row['dminst'], row['filter'], "%.6f" % row['ra'], "%.6f" % row['dec'], row['expname'])
     
     cluster.shutdown()
 
