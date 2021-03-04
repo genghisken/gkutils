@@ -80,7 +80,7 @@ def main(argv = None):
     session.set_keyspace(keyspace)
     coordslist = []
 
-    if coordsfromfile:
+    if options.coordsfromfile:
         coordslist = readGenericDataFile(options.coords, delimiter=',')
     else:
         coordslist.append({'ra': options.coords.split(',')[0], 'dec': options.coords.split(',')[1]})
