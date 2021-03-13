@@ -1,28 +1,91 @@
 """Query cassandra by RA and dec. The coords variable should be RA and dec, comma separated with NO SPACE. (To facilitate negative declinations.)
 
 Usage:
-  %s <coords> <radius> [--coordsfromfile]
+  %s <configFile> <coords> [--radius=<radius>] [--coordsfromfile] [--saveresults] [--resultslocation=<resultslocation>] [--number=<number>] [--table=<table>] [--namecolumn=<namecolumn>] [--nprocesses=<nprocesses>] [--loglocation=<loglocation>] [--logprefix=<logprefix>]
   %s (-h | --help)
   %s --version
 
 Options:
-  -h --help                    Show this screen.
-  --version                    Show version.
-  --low=<n>                    Value of ndet below which we regard data as good [default: 250].
-  --high=<n>                   Value of ndet above which we regard data as bad [default: 2000].
-  --coordsfromfile             Treat the coordinates parameter as a file of coordinates.
+  -h --help                             Show this screen.
+  --version                             Show version.
+  --coordsfromfile                      Treat the coordinates parameter as a file of coordinates.
+  --radius=<radius>                     Cone search radius in arcsec [default: 2].
+  --saveresults                         If set, store the results in a file whose prefix starts with this.
+  --resultslocation=<resultslocation>   If saveresults is set, store the results in this directory [default: /tmp].
+  --number=<number>                     If set and samller than the total list, choose a random subset.
+  --table=<table>                       Table to search [default: atlas_detections].
+  --namecolumn=<namecolumn>             If set, choose this as the name of the result file. Otherwise lc_0000001.csv, etc [default: source_id].
+  --nprocesses=<nprocesses>             Number of processes to use by default to get/write the results [default: 1]
+  --loglocation=<loglocation>           Log file location [default: /tmp/].
+  --logprefix=<logprefix>               Log prefix [default: coneSearch].
 
 """
 import sys
 __doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
-from gkutils.commonutils import Struct, readGenericDataFile, cleanOptions
+from gkutils.commonutils import Struct, readGenericDataFile, cleanOptions, parallelProcess, splitList
 
 from gkutils.commonutils import coneSearchHTMCassandra
 from cassandra.cluster import Cluster
 from cassandra.query import dict_factory
-
+import random
 import csv
+from datetime import datetime
+import os
+
+
+def getLCData(options, session, coordslist):
+    table = options.table
+    radius = float(options.radius)
+
+    counter = 0
+    for c in coordslist:
+        data = coneSearchHTMCassandra(session, c['ra'], c['dec'], radius, table, refineResults = True)
+        if data:
+            if options.saveresults:
+                try:
+                    filename = options.resultslocation + '/' + c[options.namecolumn] + '.csv'
+                except KeyError as e:
+                    filename = options.resultslocation + '/' + 'lc_%d_%07d.csv' % (os.getpid(), counter)
+                with open(filename, 'w') as f:
+                    w = csv.DictWriter(f, data[0].keys(), delimiter = ',')
+                    w.writeheader()
+                    for row in data:
+                        w.writerow(row)
+            else:
+                for row in data:
+
+                    #print (row)
+                    print (row['mjd'], "%.2f" % row['m'], "%.2f" % row['dminst'], row['filter'], "%.6f" % row['ra'], "%.6f" % row['dec'], row['expname'])
+        # Counter gets incremented regardless of whether there is a result. Means we can
+        # map the result number to the input coordinates.
+        counter += 1
+
+
+
+def worker(num, db, coordslistFragment, dateAndTime, firstPass, miscParameters):
+    """thread worker function"""
+    # Redefine the output to be a log file.
+    options = miscParameters[0]
+
+    pid = os.getpid()
+    sys.stdout = open('%s%s_%s_%d_%d.log' % (options.loglocation, options.logprefix, dateAndTime, pid, num), "w")
+    cluster = Cluster(db['hostname'])
+    session = cluster.connect()
+    session.row_factory = dict_factory
+    session.set_keyspace(db['keyspace'])
+
+
+    # This is in the worker function
+    getLCData(options, session, coordslistFragment)
+
+    print("Process complete.")
+    cluster.shutdown()
+    print("Connection Closed - exiting")
+
+    return 0
+
+
 
 def main(argv = None):
     opts = docopt(__doc__, version='0.1')
@@ -31,12 +94,8 @@ def main(argv = None):
     # Use utils.Struct to convert the dict into an object for compatibility with old optparse code.
     options = Struct(**opts)
 
-    keyspace = 'atlas'
-    host = ['db0', 'db1', 'db2', 'db3', 'db4']
-    table = 'atlas_detections'
-    
-    radius = 2.0
-    radius = float(options.radius)
+    #keyspace = 'atlas'
+    #host = ['db0', 'db1', 'db2', 'db3', 'db4']
     
     # random star
     #ra = 83.20546
@@ -74,25 +133,49 @@ def main(argv = None):
     #ra = 68.75953
     #dec = -14.22797
     
-    cluster = Cluster(host)
-    session = cluster.connect()
-    session.row_factory = dict_factory
-    session.set_keyspace(keyspace)
+    import yaml
+    with open(options.configFile) as yaml_file:
+        config = yaml.safe_load(yaml_file)
+
+    username = config['cassandra']['local']['username']
+    password = config['cassandra']['local']['password']
+    keyspace = config['cassandra']['local']['keyspace']
+    hostname = config['cassandra']['local']['hostname']
+
+    db = {'username': username,
+          'password': password,
+          'keyspace': keyspace,
+          'hostname': hostname}
+
     coordslist = []
 
     if options.coordsfromfile:
         coordslist = readGenericDataFile(options.coords, delimiter=',')
     else:
         coordslist.append({'ra': options.coords.split(',')[0], 'dec': options.coords.split(',')[1]})
-
-    for c in coordslist:
-        data = coneSearchHTMCassandra(session, c['ra'], c['dec'], radius, table, refineResults = True)
-        if data:
-            for row in data:
-                #print (row)
-                print (row['mjd'], "%.2f" % row['m'], "%.2f" % row['dminst'], row['filter'], "%.6f" % row['ra'], "%.6f" % row['dec'], row['expname'])
     
-    cluster.shutdown()
+    if options.number and int(options.number) < len(coordslist):
+        coordslist = random.sample(coordslist, int(options.number))
+
+    if int(options.nprocesses) > 1 and len(coordslist) > 1:
+        # Do it in parallel!
+        currentDate = datetime.now().strftime("%Y:%m:%d:%H:%M:%S")
+        (year, month, day, hour, min, sec) = currentDate.split(':')
+        dateAndTime = "%s%s%s_%s%s%s" % (year, month, day, hour, min, sec)
+        nProcessors, listChunks = splitList(coordslist, bins = int(options.nprocesses), preserveOrder=True)
+    
+        print("%s Parallel Processing..." % (datetime.now().strftime("%Y:%m:%d:%H:%M:%S")))
+        parallelProcess(db, dateAndTime, nProcessors, listChunks, worker, miscParameters = [options], drainQueues = False)
+        print("%s Done Parallel Processing" % (datetime.now().strftime("%Y:%m:%d:%H:%M:%S")))
+    else:
+        cluster = Cluster(db['hostname'])
+        session = cluster.connect()
+        session.row_factory = dict_factory
+        session.set_keyspace(db['keyspace'])
+
+        getLCData(options, session, coordslist)
+
+        cluster.shutdown()
 
 if __name__ == '__main__':
     main()
