@@ -22,10 +22,11 @@ Options:
 E.g.
   %s ~/config_cassandra.yaml /tmp/coords.txt --coordsfromfile --table=atlasdophot --nprocesses=4 --number=16 --saveresults
   %s ~/config_cassandra_atlas.yaml 272.40279,-9.97105
+  %s ~/config_cassandra_atlas.yaml ~atls/galactic_centre_all_gaia_objects_2degrees_ra_dec_mag_12_19.txt --coordsfromfile --table=atlas_detections --nprocesses=32 --number=10000 --saveresults --resultslocation=/tmp/atlas_lightcurves
 
 """
 import sys
-__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
+__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
 from gkutils.commonutils import Struct, readGenericDataFile, cleanOptions, parallelProcess, splitList
 
