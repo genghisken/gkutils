@@ -12,7 +12,7 @@ Options:
   --radius=<radius>                     Cone search radius in arcsec [default: 2].
   --saveresults                         If set, store the results in a file whose prefix starts with this.
   --resultslocation=<resultslocation>   If saveresults is set, store the results in this directory [default: /tmp].
-  --number=<number>                     If set and samller than the total list, choose a random subset.
+  --number=<number>                     If set and is smaller than the total list, choose a random subset.
   --table=<table>                       Table to search [default: atlas_detections].
   --namecolumn=<namecolumn>             If set, choose this as the name of the result file. Otherwise lc_pid_0000001.csv, etc [default: source_id].
   --nprocesses=<nprocesses>             Number of processes to use by default to get/write the results [default: 1]
