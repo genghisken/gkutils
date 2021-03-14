@@ -14,14 +14,18 @@ Options:
   --resultslocation=<resultslocation>   If saveresults is set, store the results in this directory [default: /tmp].
   --number=<number>                     If set and samller than the total list, choose a random subset.
   --table=<table>                       Table to search [default: atlas_detections].
-  --namecolumn=<namecolumn>             If set, choose this as the name of the result file. Otherwise lc_0000001.csv, etc [default: source_id].
+  --namecolumn=<namecolumn>             If set, choose this as the name of the result file. Otherwise lc_pid_0000001.csv, etc [default: source_id].
   --nprocesses=<nprocesses>             Number of processes to use by default to get/write the results [default: 1]
   --loglocation=<loglocation>           Log file location [default: /tmp/].
   --logprefix=<logprefix>               Log prefix [default: coneSearch].
 
+E.g.
+  %s ~/config_cassandra.yaml /tmp/coords.txt --coordsfromfile --table=atlasdophot --nprocesses=4 --number=16 --saveresults
+  %s ~/config_cassandra_atlas.yaml 272.40279,-9.97105
+
 """
 import sys
-__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0])
+__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
 from gkutils.commonutils import Struct, readGenericDataFile, cleanOptions, parallelProcess, splitList
 
