@@ -1089,7 +1089,8 @@ def coneSearchHTMCassandra (cassandraSession, ra, dec, radius, tableName, racol 
     whereClauses = htmCircleRegionCassandra(ra, dec, radius)
 
     # Columns is a list of strings. Join it so we can use it once here.
-    columnString = ','.join(columns)
+    if columns:
+        columnString = ','.join(columns)
 
     resultSet = []
     if len(whereClauses) > 0:

@@ -1,7 +1,7 @@
 """Query cassandra by RA and dec. The coords variable should be RA and dec, comma separated with NO SPACE. (To facilitate negative declinations.)
 
 Usage:
-  %s <configFile> <coords> [--radius=<radius>] [--coordsfromfile] [--saveresults] [--resultslocation=<resultslocation>] [--number=<number>] [--table=<table>] [--namecolumn=<namecolumn>] [--nprocesses=<nprocesses>] [--loglocation=<loglocation>] [--logprefix=<logprefix>]
+  %s <configFile> <coords> [--radius=<radius>] [--coordsfromfile] [--saveresults] [--resultslocation=<resultslocation>] [--number=<number>] [--table=<table>] [--namecolumn=<namecolumn>] [--querycolumns=<querycolumns>] [--nprocesses=<nprocesses>] [--loglocation=<loglocation>] [--logprefix=<logprefix>]
   %s (-h | --help)
   %s --version
 
@@ -15,6 +15,7 @@ Options:
   --number=<number>                     If set and is smaller than the total list, choose a random subset.
   --table=<table>                       Table to search [default: atlas_detections].
   --namecolumn=<namecolumn>             If set, choose this as the name of the result file. Otherwise lc_pid_0000001.csv, etc [default: source_id].
+  --querycolumns=<querycolumns>         Grab the selected colums, comma separated, no spaces - instead of everything. Could speed up queries.
   --nprocesses=<nprocesses>             Number of processes to use by default to get/write the results [default: 1]
   --loglocation=<loglocation>           Log file location [default: /tmp/].
   --logprefix=<logprefix>               Log prefix [default: coneSearch].
@@ -43,9 +44,13 @@ def getLCData(options, session, coordslist):
     table = options.table
     radius = float(options.radius)
 
+    columns = None
+    if options.columns:
+        columns = split(options.querycolumns,',')
+
     counter = 0
     for c in coordslist:
-        data = coneSearchHTMCassandra(session, c['ra'], c['dec'], radius, table, refineResults = True)
+        data = coneSearchHTMCassandra(session, c['ra'], c['dec'], radius, table, refineResults = True, columns = columns)
         if data:
             if options.saveresults:
                 try:
