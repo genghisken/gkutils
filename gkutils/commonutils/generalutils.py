@@ -1059,7 +1059,7 @@ def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, 
    return message, results
 
 
-def coneSearchHTMCassandra (cassandraSession, ra, dec, radius, tableName, racol = 'ra', deccol = 'dec', refineResults = True):
+def coneSearchHTMCassandra (cassandraSession, ra, dec, radius, tableName, racol = 'ra', deccol = 'dec', refineResults = True, columns = None):
     """coneSearchHTMCassandra.
 
     Args:
@@ -1068,6 +1068,10 @@ def coneSearchHTMCassandra (cassandraSession, ra, dec, radius, tableName, racol 
         dec:
         radius:
         tableName:
+        racol:
+        deccol:
+        refineResults:
+        columns:
     """
 
     from gkhtm._gkhtm import htmCircleRegionCassandra
@@ -1084,10 +1088,16 @@ def coneSearchHTMCassandra (cassandraSession, ra, dec, radius, tableName, racol 
     # Hence we must query multiple times to get the complete dataset.
     whereClauses = htmCircleRegionCassandra(ra, dec, radius)
 
+    # Columns is a list of strings. Join it so we can use it once here.
+    columnString = ','.join(columns)
+
     resultSet = []
     if len(whereClauses) > 0:
         for w in whereClauses:
-            fullQuery = "select * from %s " % (tableName) + w
+            if columns:
+                fullQuery = "select %s from %s " % (columnString, tableName) + w
+            else:
+                fullQuery = "select * from %s " % (tableName) + w
 
             result = None
             try:
