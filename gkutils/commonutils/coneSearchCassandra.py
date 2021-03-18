@@ -46,7 +46,7 @@ def getLCData(options, session, coordslist):
 
     columns = None
     if options.querycolumns:
-        columns = split(options.querycolumns,',')
+        columns = options.querycolumns.strip().split(',')
 
     counter = 0
     for c in coordslist:
