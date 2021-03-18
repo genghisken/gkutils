@@ -45,7 +45,7 @@ def getLCData(options, session, coordslist):
     radius = float(options.radius)
 
     columns = None
-    if options.columns:
+    if options.querycolumns:
         columns = split(options.querycolumns,',')
 
     counter = 0
