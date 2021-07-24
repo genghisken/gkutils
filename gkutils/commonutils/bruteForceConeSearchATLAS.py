@@ -2,7 +2,7 @@
 """Is object in the list of ATLAS exposures?
 
 Usage:
-  %s <atlasCentresFile> <inputCoordsFile> [--searchradius=<searchradius>] [--footprints] [--red] [--checkmjd] [--mjdtolerance=<mjdtolerance>] [--debug]
+  %s <atlasCentresFile> <inputCoordsFile> [--searchradius=<searchradius>] [--footprints] [--red] [--checkmjd] [--mjdtolerance=<mjdtolerance>] [--debug] [--auxparams=<auxparams>]
   %s (-h | --help)
   %s --version
 
@@ -14,6 +14,7 @@ Options:
   --red                           Give me the full ATLAS reduced file locations.
   --checkmjd                      Only return exposures with MJDs within mjdtolerance.
   --mjdtolerance=<mjdtolerance>   Compare footprint MJD with input MJD (days). [default: 1.0]
+  --auxparams=<auxparams>         Spit out some auxiliary parameters from the ATLAS exposures list. Comma separated. No spaces. Ignored if not present.
   --debug                         Spit out some debug.
 
 
@@ -23,10 +24,11 @@ Example:
    %s all_atlas_exposures.tst eris_coordinates_and_mjds.csv --checkmjd --red
    %s all_atlas_exposures.tst eris_coordinates_and_mjds.csv --checkmjd --red --footprints
    %s all_atlas_exposures.tst eris_coordinates_and_mjds.csv --checkmjd --red --footprints --mjdtolerance=0.5
+   %s ~/atlas/volume_limited_survey/all_co_exposures_20210520_mjd_58940_58969.tst ~/atlas/volume_limited_survey/FakerPositions_10.lis --auxparams=mag5sig --footprints
 
 """
 import sys
-__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
+__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
 import os, shutil, re
 from gkutils.commonutils import Struct, cleanOptions, readGenericDataFile, coords_sex_to_dec, bruteForceGenericConeSearch, isObjectInsideATLASFootprint
@@ -56,6 +58,10 @@ def main(argv = None):
 
     # Use utils.Struct to convert the dict into an object for compatibility with old optparse code.
     options = Struct(**opts)
+
+    auxparams = []
+    if options.auxparams:
+        auxparams = options.auxparams.split(',')
 
     atlasCentres = readGenericDataFile(options.atlasCentresFile, delimiter='\t')
     atlasRowLen = len(atlasCentres[0].keys())
@@ -101,9 +107,20 @@ def main(argv = None):
                                 red = '/atlas/red/' + matches['camera'] + '/' + matches['mjd'] + '/' + r['expname'] + '.fits.fz'
                                 print(row['name'], red)
                             else:
-                                print(row['name'], r['expname'])
+                                try:
+                                    if len(auxparams) > 0:
+                                        print(row['name'], r['expname'], end = " ")
+                                        for param in auxparams:
+                                            print(r[param], end = " ")
+                                        print()
+                                    else:
+                                        print(row['name'], r['expname'])
+                                except KeyError as e:
+                                    print()
+                                    #print(row['name'], r['expname'])
                         else:
                             print(row['name'], r['expname'])
+
 
     else:
         for row in inputCoords:

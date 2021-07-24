@@ -2770,3 +2770,18 @@ def htmTriangleArea(level):
     skyInSqArcsec = skyInSqDegrees * 3600.0 ** 2
     triangleArea = skyInSqArcsec/(8*4**level)
     return triangleArea
+
+
+def fluxToMicroJansky(adu, exptime, zp):
+    """fluxToMicroJansky.
+
+    Args:
+        adu: flux in adu - e.g. psf_inst_flux
+        exptime: exposure time
+        zp: zeropoint
+    """
+
+    factor = 10**(-0.4*(zp-23.9))
+    uJy = adu/exptime*factor
+    return uJy
+
