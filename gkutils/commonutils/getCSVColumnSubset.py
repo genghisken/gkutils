@@ -1,7 +1,7 @@
 """Write a subset of keys from one CSV to another. Don't use lots of memory.
 
 Usage:
-  %s <filename> <outputfile> [--columns=<columns>] [--htm] [--racol=<racol>] [--deccol=<deccol>]
+  %s <filename> <outputfile> [--columns=<columns>] [--htm] [--racol=<racol>] [--deccol=<deccol>] [--filtercol=<filtercol>]
   %s (-h | --help)
   %s --version
 
@@ -12,6 +12,7 @@ Options:
   --htm                        Generate HTM IDs and add to the column subset.
   --racol=<racol>              RA column, ignored if htm not specified [default: ra]
   --deccol=<deccol>            Declination column, ignored if htm not specified [default: dec]
+  --filtercol=<filtercol>      Only write the row when this column is not blank.
 
 """
 import sys
@@ -36,6 +37,8 @@ def getColumnSubset(options):
         w = csv.DictWriter(f, columns, delimiter = ',')
         w.writeheader()
         for row in data:
+
+            # TO FIX - code is very inefficient. HTMs generated regardless of filtercol. Silly!
             trimmedRow = {key: row[key] for key in options.columns.split(',')}
             if options.htm:
                 htm16Name = htmName(16, float(row[options.racol]), float(row[options.deccol]))
@@ -43,7 +46,14 @@ def getColumnSubset(options):
                 trimmedRow['htm13'] = htm16Name[12:15]
                 trimmedRow['htm16'] = htm16Name[15:18]
 
-            w.writerow(trimmedRow)
+            try:
+                if options.filtercol:
+                    if trimmedRow[options.filtercol] and trimmedRow[options.filtercol] != 'null':
+                        w.writerow(trimmedRow)
+                else:
+                    w.writerow(trimmedRow)
+            except KeyError as e:
+                w.writerow(trimmedRow)
 
     return
 
