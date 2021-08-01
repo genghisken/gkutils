@@ -817,6 +817,16 @@ CAT_ID_RA_DEC_COLS = {
    'atlas_v_followup4': [['id', 'ra', 'dec'],3007],
    'atlas_v_followup5': [['id', 'ra', 'dec'],3008],
    'atlas_v_followup6': [['id', 'ra', 'dec'],3009],
+   'psdb_web_v_followup_bad_presentation': [['id', 'ra_psf', 'dec_psf'],4000],
+   'psdb_web_v_followup_conf_presentation': [['id', 'ra_psf', 'dec_psf'],4001],
+   'psdb_web_v_followup_good_presentation': [['id', 'ra_psf', 'dec_psf'],4002],
+   'psdb_web_v_followup_poss_presentation': [['id', 'ra_psf', 'dec_psf'],4003],
+   'psdb_web_v_followup_pend_presentation': [['id', 'ra_psf', 'dec_psf'],4004],
+   'psdb_web_v_followup_attic_presentation': [['id', 'ra_psf', 'dec_psf'],4005],
+   'psdb_web_v_followup_zoo_presentation': [['id', 'ra_psf', 'dec_psf'],4006],
+   'psdb_web_v_followup_tbd_presentation': [['id', 'ra_psf', 'dec_psf'],4007],
+   'psdb_web_v_followup_fast_presentation': [['id', 'ra_psf', 'dec_psf'],4008],
+   'psdb_web_v_followup_all_presentation': [['id', 'ra_psf', 'dec_psf'],4100],
 }
 
 # 2012-02-02 KWS Cone Searcher based on the new SWIG C++ code.  Need speed.
