@@ -1,7 +1,8 @@
 """Query cassandra by RA and dec. The coords variable should be RA and dec, comma separated with NO SPACE. (To facilitate negative declinations.)
 
 Usage:
-  %s <configFile> <coords> [--radius=<radius>] [--coordsfromfile] [--saveresults] [--resultslocation=<resultslocation>] [--number=<number>] [--table=<table>] [--namecolumn=<namecolumn>] [--querycolumns=<querycolumns>] [--nprocesses=<nprocesses>] [--loglocation=<loglocation>] [--logprefix=<logprefix>]
+  %s <configFile> <coords> [--radius=<radius>] [--coordsfromfile] [--saveresults] [--resultslocation=<resultslocation>] [--number=<number>] [--table=<table>] [--namecolumn=<namecolumn>] [--querycolumns=<querycolumns>] [--nprocesses=<nprocesses>] [--loglocation=<loglocation>] [--logprefix=<logprefix>] [--coldate=<coldate>] [--colmag=<colmag>] [--colmagerr=<colmagerr>] [--colfilter=<colfilter>] [--colra=<colra>] [--coldec=<coldec>] [--colexpname=<colexpname>]
+
   %s (-h | --help)
   %s --version
 
@@ -19,15 +20,24 @@ Options:
   --nprocesses=<nprocesses>             Number of processes to use by default to get/write the results [default: 1]
   --loglocation=<loglocation>           Log file location [default: /tmp/].
   --logprefix=<logprefix>               Log prefix [default: coneSearch].
+  --coldate=<coldate>                   The column that represents date [default: mjd].
+  --colmag=<colmag>                     The column that represents mag [default: m].
+  --colmagerr=<colmagerr>               The column that represents mag error [default: dminst].
+  --colfilter=<colfilter>               The column that represents the filter [default: filter].
+  --colra=<colra>                       The column that represents the RA [default: ra].
+  --coldec=<coldec>                     The column that represents the declination [default: dec].
+  --colexpname=<colexpname>             The column that represents the exposure name OR (e.g.) objectId [default: expname].
 
 E.g.
   %s ~/config_cassandra.yaml /tmp/coords.txt --coordsfromfile --table=atlasdophot --nprocesses=4 --number=16 --saveresults
   %s ~/config_cassandra_atlas.yaml 272.40279,-9.97105
   %s ~/config_cassandra_atlas.yaml ~atls/galactic_centre_all_gaia_objects_2degrees_ra_dec_mag_12_19.txt --coordsfromfile --table=atlas_detections --nprocesses=32 --number=10000 --saveresults --resultslocation=/tmp/atlas_lightcurves
+  %s ~/config_cassandra.yaml 309.5032775,74.6050893 --table=htmcandidates --coldate=jd --colmag=magpsf --colmagerr=sigmapsf --colfilter=fid --colexpname=objectId
+                            
 
 """
 import sys
-__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
+__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
 from gkutils.commonutils import Struct, readGenericDataFile, cleanOptions, parallelProcess, splitList
 
@@ -66,7 +76,7 @@ def getLCData(options, session, coordslist):
                 for row in data:
 
                     #print (row)
-                    print (row['mjd'], "%.2f" % row['m'], "%.2f" % row['dminst'], row['filter'], "%.6f" % row['ra'], "%.6f" % row['dec'], row['expname'])
+                    print (row[options.coldate], "%.2f" % row[options.colmag], "%.2f" % row[options.colmagerr], row[options.colfilter], "%.6f" % row[options.colra], "%.6f" % row[options.coldec], row[options.colexpname])
         # Counter gets incremented regardless of whether there is a result. Means we can
         # map the result number to the input coordinates.
         counter += 1
