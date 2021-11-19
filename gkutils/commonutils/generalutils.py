@@ -2795,3 +2795,86 @@ def fluxToMicroJansky(adu, exptime, zp):
     uJy = adu/exptime*factor
     return uJy
 
+# 2021-11-18 KWS Added code to grab the SFD extinction for PS1 and ATLAS filters.
+def getSFDPanSTARRSATLASExtinction(ra, dec, dustmapDirectory, download = False):
+    """getPanSTARRSATLASExtinction.
+
+    Args:
+        ra: right ascension in degrees
+        dec: declination in degrees
+        dustmapDirectory: directory where the SFD dustmaps are stored
+        download: download the maps if they don't already exist
+    """
+    import os
+
+    extinction = {}
+
+    try:
+        from astropy.coordinates import SkyCoord
+    except ModuleNotFoundError as e:
+        print (e)
+        print ("Please install the astropy module.")
+        return extinction
+
+    try:
+        from dustmaps.sfd import SFDQuery, fetch
+    except ModuleNotFoundError as e:
+        print (e)
+        print ("Please install the dustmaps module.")
+        return extinction
+
+    from dustmaps.config import config
+    config['data_dir'] = dustmapDirectory
+
+    if not os.path.exists(dustmapDirectory + '/sfd/SFD_dust_4096_sgp.fits') or not os.path.exists(dustmapDirectory + '/sfd/SFD_dust_4096_ngp.fits'):
+        if download == True:
+            print("Downloading the SFD dustmap files...")
+            if not os.path.exists(dustmapDirectory):
+                os.makedirs(dustmapDirectory)
+            try:
+                fetch()
+            except PermissionError as e:
+                print (e)
+                print ("No permission to write into the download directory.")
+                return extinction
+        else:
+            print (e)
+            print("SFD Maps not found! Please elect to download the maps!")
+            return extinction
+
+    coords = SkyCoord(ra, dec, unit='deg', frame='icrs')
+
+    try:
+        sfd = SFDQuery()
+    except OSError as e:
+        print (e)
+        print ("Something went wrong - file is possibly corrupt. Try deleting the files and forcing a re-download.")
+        return extinction
+    except TypeError as e:
+        print (e)
+        print ("Something went wrong - file is possibly corrupt. Try deleting the files and forcing a re-download.")
+        return extinction
+    ebv = sfd(coords)
+
+    # Schlegel, Finkbeiner, Davis PS1 Rv3.1 conversions from
+    # https://ui.adsabs.harvard.edu/abs/1998ApJ...500..525S/abstract
+    # https://ui.adsabs.harvard.edu/abs/2011ApJ...737..103S/abstract
+
+    Rv31_PS1_g = 3.172
+    Rv31_PS1_r = 2.271
+    Rv31_PS1_i = 1.682
+    Rv31_PS1_z = 1.322
+    Rv31_PS1_y = 1.087
+
+    extinction['A_gPS1'] = round(ebv * Rv31_PS1_g,3)
+    extinction['A_rPS1'] = round(ebv * Rv31_PS1_r,3)
+    extinction['A_iPS1'] = round(ebv * Rv31_PS1_i,3)
+    extinction['A_zPS1'] = round(ebv * Rv31_PS1_z,3)
+    extinction['A_yPS1'] = round(ebv * Rv31_PS1_y,3)
+
+    # Calculating the ATLAS "c" and "o" from Tonry et al https://ui.adsabs.harvard.edu/abs/2018PASP..130f4505T/abstract
+    extinction['A_c'] = round((0.49 * extinction['A_gPS1']) + (0.51 * extinction['A_rPS1']),3)
+    extinction['A_o'] = round((0.55 * extinction['A_rPS1']) + (0.45 * extinction['A_iPS1']),3)
+
+    return extinction
+
