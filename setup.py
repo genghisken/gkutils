@@ -14,7 +14,7 @@ setup(
     description='A collection useful utilities - mostly related to astronomy',
     long_description=readme(),
     long_description_content_type="text/markdown",
-    version="0.2.9",
+    version="0.2.10",
     author='genghisken',
     author_email='ken.w.smith@gmail.com',
     license='MIT',
@@ -33,6 +33,9 @@ setup(
       ],
     python_requires='>=3.6',
     entry_points = {
-        'console_scripts': ['bruteForceConeSearchATLAS=gkutils.commonutils.bruteForceConeSearchATLAS:main','coneSearchCassandra=gkutils.commonutils.coneSearchCassandra:main','getCSVColumnSubset=gkutils.commonutils.getCSVColumnSubset:main'],
+        'console_scripts': ['bruteForceConeSearchATLAS=gkutils.commonutils.bruteForceConeSearchATLAS:main',
+                            'coneSearchCassandra=gkutils.commonutils.coneSearchCassandra:main',
+                            'getCSVColumnSubset=gkutils.commonutils.getCSVColumnSubset:main',
+                            'getTestSherlockData=gkutils.commonutils.getTestSherlockData:main'],
     },
 )
