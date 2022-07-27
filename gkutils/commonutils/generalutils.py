@@ -1328,7 +1328,7 @@ def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = N
    # Sometimes the file has a very annoying initial # character on the first line.
    # We need to delete this character or replace it with a space.
 
-   if type(filename).__name__ == 'file' or type(filename).__name__ == 'instance' or type(filename).__name__ == 'GzipFile':
+   if type(filename).__name__ == 'file' or type(filename).__name__ == 'instance' or type(filename).__name__ == 'GzipFile' or type(filename).__name__ == 'StringIO':
       f = filename
    else:
       f = open(filename)
@@ -2877,4 +2877,41 @@ def getSFDPanSTARRSATLASExtinction(ra, dec, dustmapDirectory, download = False):
     extinction['A_o'] = round((0.55 * extinction['A_rPS1']) + (0.45 * extinction['A_iPS1']),3)
 
     return extinction
+
+
+# This function expects a list of dicts with keys x, y, obs.
+def calculateHeatMap(dataRows, resolution = 128, chipSize = 10560):
+    """calculateHeatMap.
+
+    Args:
+        dataRows:
+        resolution:
+        chipSize:
+    """
+
+    import numpy as n
+
+    matrix = None
+    if resolution not in [8, 16, 32, 64, 128, 256, 512]:
+        print("Heatmap resolution should be 8, 16, 32, 64, 128, 256 or 512")
+        return matrix
+
+    matrix = n.zeros((resolution,resolution), dtype=n.int)
+    expmaps = {}
+
+    oldExpname = ''
+    numberOfRows = 0
+
+    exps = set()
+    for row in dataRows:
+        x = int(float(row['x'])/(chipSize - 1) * resolution)
+        y = int(((chipSize - 1) - float(row['y']))/(chipSize - 1) * resolution)
+        exps.add(row['obs'])
+
+        if x >= 0 and y >= 0 and x < resolution and y < resolution:
+            matrix[y][x] += 1
+
+    mat = {'matrix': matrix, 'exps': exps}
+
+    return mat
 

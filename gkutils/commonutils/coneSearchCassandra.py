@@ -33,11 +33,12 @@ E.g.
   %s ~/config_cassandra_atlas.yaml 272.40279,-9.97105
   %s ~/config_cassandra_atlas.yaml ~atls/galactic_centre_all_gaia_objects_2degrees_ra_dec_mag_12_19.txt --coordsfromfile --table=atlas_detections --nprocesses=32 --number=10000 --saveresults --resultslocation=/tmp/atlas_lightcurves
   %s ~/config_cassandra.yaml 309.5032775,74.6050893 --table=htmcandidates --coldate=jd --colmag=magpsf --colmagerr=sigmapsf --colfilter=fid --colexpname=objectId
+  %s /home/ubuntu/config.yaml /var/lib/cassandra/test/unique_objects_100000_mean_coords.txt --coordsfromfile --table=htmcandidates --coldate=jd --colmag=magpsf --colmagerr=sigmapsf --colfilter=fid --colexpname=objectid --number=1000 --nprocesses=16 --saveresults --resultslocation=/home/ubuntu/coneresults --namecolumn=objectid --querycolumns=objectid,jd,magpsf,sigmapsf,fid,ra,dec
                             
 
 """
 import sys
-__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
+__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
 from gkutils.commonutils import Struct, readGenericDataFile, cleanOptions, parallelProcess, splitList
 
