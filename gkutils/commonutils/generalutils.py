@@ -2905,7 +2905,9 @@ def calculateHeatMap(dataRows, resolution = 128, chipSize = 10560):
     exps = set()
     for row in dataRows:
         x = int(float(row['x'])/(chipSize - 1) * resolution)
-        y = int(((chipSize - 1) - float(row['y']))/(chipSize - 1) * resolution)
+        #y = int(((chipSize - 1) - float(row['y']))/(chipSize - 1) * resolution)
+        # For plotting we will need to flip the map, because the pixel coordinates have origin in top left, not bottom left.
+        y = int(float(row['y'])/(chipSize - 1) * resolution)
         exps.add(row['obs'])
 
         if x >= 0 and y >= 0 and x < resolution and y < resolution:
