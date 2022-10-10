@@ -1312,7 +1312,12 @@ def readATLASddetHeader(filename, delimiter = '= ', useOrderedDict = False):
 # 2016-08-10 KWS Test the type of the variable 'filename'.  If it's a file, no need to open.
 # 2017-05-05 KWS Allow use of OrderedDict instead of python dict. Useful when we want to order
 #                the output by the original field order.
-def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = None, useOrderedDict = False):
+# 2022-10-10 KWS Added appendheaderlines, headerdelimiter, headerprefix and headerkeycollisionsuffix
+#                parameters to allow readout of a header file with values such as '# RA= 10.0' and
+#                append the values to a flattened dictionary row. Done for (e.g.) Cassandra
+#                where we have flattened data with no foreign keys. Inefficient (uses too much
+#                memory by inflating the size of each row), but effective.
+def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = None, useOrderedDict = False, appendheaderlines=False, headerdelimiter='=', headerprefix='#', headerkeycollisionsuffix='HEAD'):
    """readGenericDataFile.
 
    Args:
@@ -1321,6 +1326,10 @@ def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = N
         skipLines:
         fieldnames:
         useOrderedDict:
+        appendheaderlines:
+        headerdelimiter:
+        headerprefix:
+        headerkeycollisionsuffix:
    """
    import csv
    from collections import OrderedDict
@@ -1333,8 +1342,14 @@ def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = N
    else:
       f = open(filename)
 
+   headerdata = {}
    if skipLines > 0:
-      [f.readline() for i in range(skipLines)]
+      if appendheaderlines:
+         for i in range(skipLines):
+            ln = f.readline().strip().replace(headerprefix,'')
+            headerdata[ln.split(headerdelimiter)[0].strip()] = ln.split(headerdelimiter)[1].strip()
+      else:
+         [f.readline() for i in range(skipLines)]
 
    # We'll assume a comment line immediately preceding the data is the column headers.
 
@@ -1354,6 +1369,7 @@ def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = N
 
    # 2018-02-12 KWS Strip out whitespace from around any fieldnames
    fieldnames = [x.strip() for x in fieldnames]
+   lcfieldnames = [x.lower().strip() for x in fieldnames]
    # The file pointer is now at line 2
 
    t = csv.DictReader(f, fieldnames = fieldnames, delimiter=delimiter, skipinitialspace = True)
@@ -1361,8 +1377,21 @@ def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = N
    data = []
    for row in t:
       if useOrderedDict:
-          data.append(OrderedDict((key, row[key]) for key in fieldnames))
+          od = OrderedDict((key, row[key]) for key in fieldnames)
+          if appendheaderlines:
+              for k,v in headerdata.items():
+                  if k.lower() in lcfieldnames:
+                      od[k+headerkeycollisionsuffix] = v
+                  else:
+                      od[k] = v
+          data.append(od)
       else:
+          if appendheaderlines:
+              for k,v in headerdata.items():
+                  if k.lower() in lcfieldnames:
+                      row[k+headerkeycollisionsuffix] = v
+                  else:
+                      row[k] = v
           data.append(row)
 
    # Only close the file if we opened it in the first place
