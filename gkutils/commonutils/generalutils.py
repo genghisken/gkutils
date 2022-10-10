@@ -1318,7 +1318,8 @@ def readATLASddetHeader(filename, delimiter = '= ', useOrderedDict = False):
 #                where we have flattened data with no foreign keys. Inefficient (uses too much
 #                memory by inflating the size of each row), but effective.
 # 2022-10-10 KWS Added a rownum column. If set, each row will have an extra column name with the
-#                index offset. (Allows database inserts to be compared with source files.)
+#                index offset. (Allows database inserts to be compared with source files.) Note
+#                that the rownum column has been cast as a string for compatibility reasons.
 def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = None, useOrderedDict = False, appendheaderlines=False, headerdelimiter='=', headerprefix='#', headerkeycollisionsuffix='HEAD', rownumcolumn=None):
    """readGenericDataFile.
 
@@ -1380,7 +1381,7 @@ def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = N
    counter = 0
    for row in t:
       if rownumcolumn:
-          row[rownumcolumn] = counter
+          row[rownumcolumn] = str(counter)
           fieldnames.append(rownumcolumn)
       if useOrderedDict:
           od = OrderedDict((key, row[key]) for key in fieldnames)
