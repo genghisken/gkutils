@@ -1320,6 +1320,7 @@ def readATLASddetHeader(filename, delimiter = '= ', useOrderedDict = False):
 # 2022-10-10 KWS Added a rownum column. If set, each row will have an extra column name with the
 #                index offset. (Allows database inserts to be compared with source files.) Note
 #                that the rownum column has been cast as a string for compatibility reasons.
+# 2022-11-07 KWS New skipLines = -1 option == guess where the table header lives.
 def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = None, useOrderedDict = False, appendheaderlines=False, headerdelimiter='=', headerprefix='#', headerkeycollisionsuffix='HEAD', rownumcolumn=None):
    """readGenericDataFile.
 
@@ -1344,6 +1345,22 @@ def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = N
       f = filename
    else:
       f = open(filename)
+
+   data = []
+
+   lineNumber = 0
+   if skipLines == -1:
+      # Iterate through the file and figure out where the table header is. It's the
+      # commented line just before the data where there is no hash symbol.
+      try:
+         while f.readline()[0] == '#':
+            lineNumber += 1
+      except IndexError as e:
+         # We got to the end of the file and there is no actual data.
+         return data
+      # Go back to the beginning of the file.
+      f.seek(0,0)
+      skipLines = lineNumber - 1
 
    headerdata = {}
    if skipLines > 0:
@@ -1377,7 +1394,6 @@ def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = N
 
    t = csv.DictReader(f, fieldnames = fieldnames, delimiter=delimiter, skipinitialspace = True)
 
-   data = []
    counter = 0
    for row in t:
       if rownumcolumn:
