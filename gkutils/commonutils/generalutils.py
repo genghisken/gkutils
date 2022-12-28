@@ -338,6 +338,40 @@ def base26toBase10(b26number):
 
     return b10number
 
+# 2022-12-28 KWS Added two new Base 26 encode/decode functions. These are
+#                aimed at the Pan-STARRS nameserver where we start with
+#                single letters, then progress to two letters, etc. I
+#                may eventually use this for ATLAS as well.
+def base26Encode(number, alphabet="abcdefghijklmnopqrstuvwxyz"):
+    """Converts an integer to an alphabet equivilent"""
+    if not isinstance(number, (int)):
+        raise TypeError("number must be an integer")
+
+    if number <= 0:
+        return None
+
+    if 1 <= number - 1 < len(alphabet):
+        return alphabet[number - 1]
+
+    base = ''
+    while number != 0:
+        number, r = divmod(number, len(alphabet))
+        if r == 0:
+            number = number - 1
+        base = alphabet[r - 1] + base
+    return base
+
+
+def base26Decode(value, alphabet="abcdefghijklmnopqrstuvwxyz"):
+    """Decodes alphabet letters to integers"""
+    if not value.isalpha():
+        return None
+    value = value.lower()[::-1]
+    number = 0
+    for i in range(len(value)):
+        number = ((len(alphabet) ** i) * (alphabet.index(value[i]) + 1)) + number
+    return number
+
 
 class DictLookup(dict):
    """
