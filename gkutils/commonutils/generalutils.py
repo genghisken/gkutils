@@ -3005,7 +3005,8 @@ def calculateHeatMap(dataRows, resolution = 128, chipSize = 10560):
     return mat
 
 # 2023-01-03 KWS Get object name from remote nameserver.
-def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDate, dbName):
+# 2023-01-03 KWS Added a default 2 second timeout and a timeout error trap.
+def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDate, dbName, timeout = 2):
     """getLocalObjectName.
 
     Args:
@@ -3016,15 +3017,25 @@ def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDa
         dec: Declination
         flagDate: Date the object was flagged
         dbName: Database name
+        timeout: Connection timeout
 
     Returns:
         Dictionary of HTTP status, name, counter, info
     """
     import requests
+    from requests.exceptions import ConnectionError as RequestsConnectionError
+    from requests.exceptions import Timeout as RequestsConnectionTimeoutError
+
     counter = None
     name = None
     message = None
     info = None
+
+    response = {}
+    response['status'] = None
+    response['counter'] = None
+    response['name'] = None
+    response['info'] = None
 
     payload = {}
     payload['internalObjectId'] = objectId
@@ -3033,7 +3044,18 @@ def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDa
     payload['flagDate'] = flagDate
     payload['survey_database'] = dbName
 
-    r = requests.post(nameserverURL, json=payload, headers={'Authorization': 'Token ' + nameserverToken})
+    try:
+        r = requests.post(nameserverURL, json=payload, headers={'Authorization': 'Token ' + nameserverToken}, timeout = timeout)
+    except RequestsConnectionError as e:
+        response['info'] = "Error: Unable to connect. Exception is %s" % str(e)
+        return response
+    except RequestsConnectionTimeoutError as e:
+        response['info'] = "Error: Request timed out. Exception is %s" % str(e)
+        return response
+    except Exception as e:
+        response['info'] = "Error: Something went wrong. Exception is %s" % str(e)
+        return response
+
     status = r.status_code
 
     try:
