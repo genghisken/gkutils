@@ -3004,3 +3004,56 @@ def calculateHeatMap(dataRows, resolution = 128, chipSize = 10560):
 
     return mat
 
+# 2023-01-03 KWS Get object name from remote nameserver.
+def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDate, dbName):
+    """getLocalObjectName.
+
+    Args:
+        nameserverURL: URL of nameserver API
+        nameserverToken: API token
+        objectId: Internal object ID
+        ra: RA
+        dec: Declination
+        flagDate: Date the object was flagged
+        dbName: Database name
+
+    Returns:
+        Dictionary of HTTP status, name, counter, info
+    """
+    import requests
+    counter = None
+    name = None
+    message = None
+    info = None
+
+    payload = {}
+    payload['internalObjectId'] = objectId
+    payload['ra'] = ra 
+    payload['decl'] = dec
+    payload['flagDate'] = flagDate
+    payload['survey_database'] = dbName
+
+    r = requests.post(nameserverURL, json=payload, headers={'Authorization': 'Token ' + nameserverToken})
+    status = r.status_code
+
+    try:
+        reply = r.json()
+    except ValueError as e:
+        info = "Error: Something went wrong. %s" % e
+
+    if reply:
+        try:
+            counter = reply['event_counter']
+            name = reply['event_id']
+            info = reply['info']
+        except KeyError as e:
+            info = str(reply)
+
+    response = {}
+    response['status'] = status
+    response['counter'] = counter
+    response['name'] = name
+    response['info'] = info
+
+    return response
+
