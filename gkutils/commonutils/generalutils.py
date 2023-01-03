@@ -3079,3 +3079,40 @@ def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDa
 
     return response
 
+# 2023-01-01 KWS Same as getLocalObjectName, but includes a multiplier
+#                so we can derive the year and truncated year count.
+#                I didn't include this in the above function because I
+#                didn't want to build any dependency on the multiplier.
+def getLocalName(nameserverURL, nameserverToken, objectId, ra, dec, flagDate, dbName, multiplier):
+    """getLocalName.
+
+    Args:
+        nameserverURL: URL of nameserver API
+        nameserverToken: API token
+        objectId: Internal object ID
+        ra: RA
+        dec: Declination
+        flagDate: Date the object was flagged
+        dbName: Database name
+        multiplier: The multiplier used to infer the year
+    """
+    nameData = {'objectName': None,
+                'objectCounter': None,
+                'year': None,
+                'yearCounter': None,
+                'responseInfo': None }
+
+    response = getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDate, dbName)
+    try:
+        nameData['objectName'] = response['name']
+        nameData['objectCounter'] = response['counter']
+        nameData['responseInfo'] = response['info']
+    except KeyError as e:
+        pass
+
+    if nameData['objectName'] is not None and nameData['objectCounter'] is not None:
+        nameData['year'] = nameData['objectCounter'] // multiplier
+        nameData['yearCounter'] = nameData['objectCounter'] % multiplier
+
+    return nameData
+
