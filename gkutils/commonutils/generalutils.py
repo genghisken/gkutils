@@ -3031,6 +3031,8 @@ def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDa
     message = None
     info = None
 
+    reply = None
+
     response = {}
     response['status'] = None
     response['counter'] = None
@@ -3061,7 +3063,8 @@ def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDa
     try:
         reply = r.json()
     except ValueError as e:
-        info = "Error: Something went wrong. %s" % e
+        info = "Error: Something went wrong. %s" % str(e)
+        response['info'] = info
 
     if reply:
         try:
