@@ -33,7 +33,7 @@ from docopt import docopt
 import os, shutil, re
 from gkutils.commonutils import Struct, cleanOptions, readGenericDataFile, coords_sex_to_dec, bruteForceGenericConeSearch, isObjectInsideATLASFootprint
 
-atlas_regex = '(0[12]a)([56][0-9]{4})o([0-9]{4})([A-Za-z])'
+atlas_regex = '(0[1234]a)([56][0-9]{4})o([0-9]{4})([A-Za-z])'
 atlas_regex_compiled = re.compile(atlas_regex)
 
 

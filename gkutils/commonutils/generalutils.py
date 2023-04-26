@@ -1669,18 +1669,20 @@ def pr_hammer(Long,Lat,R):
 
 # 2012-03-07 KWS Created redshiftToDistance calculator based on our C++ code,
 #                which is itself based on Ned Wright's Cosmology Calculator code.
+# 2023-04-26 KWS Pass in H0 - e.g. lower value for Planck cosmology.
 
-def redshiftToDistance(z):
+def redshiftToDistance(z, H0 = 70.0):
    """redshiftToDistance.
 
    Args:
         z:
+        H0: Hubble constant (km s-1 Mpc-1, default = 70.0)
    """
 
    # Cosmological Parameters (to be changed if required)
    WM = 0.3           # Omega_matter
    WV = 0.7           # Omega_vacuum
-   H0 = 70.0           # Hubble constant (km s-1 Mpc-1)
+   #H0 = 70.0           # Hubble constant (km s-1 Mpc-1)
 
    # Other variables
    h = H0/100.0
