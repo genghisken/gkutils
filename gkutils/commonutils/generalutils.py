@@ -861,6 +861,13 @@ CAT_ID_RA_DEC_COLS = {
    'psdb_web_v_followup_tbd_presentation': [['id', 'ra_psf', 'dec_psf'],4007],
    'psdb_web_v_followup_fast_presentation': [['id', 'ra_psf', 'dec_psf'],4008],
    'psdb_web_v_followup_all_presentation': [['id', 'ra_psf', 'dec_psf'],4100],
+
+   # 2023-07-04 KWS Add a few extra catalogues from ePESSTO+ crossmatch_catalogues table. Start at 5000 for catalogue ID.
+   'tcs_cat_2mass_psc_final': [['id', 'ra', 'decl'],5000],
+   # 2023-07-04 KWS Note that RightAsc and Declination are in RADIANS for tcs_cat_guide_star_catalogue_v2_3.
+   'tcs_cat_ned_stream': [['ned_name', 'raDeg', 'decDeg', 'redshift'],5004],
+   'tcs_cat_ps1_dr1': [['objID', 'raAve', 'decAve'],5005],
+   'tcs_cat_sdss_photo_stars_galaxies_dr12': [['objID', 'ra', 'dec_'],5007],
 }
 
 # 2012-02-02 KWS Cone Searcher based on the new SWIG C++ code.  Need speed.
@@ -2329,7 +2336,7 @@ def xy2sky(filename, x, y):
    import subprocess, csv, io
    p = subprocess.Popen(['xy2sky','-d' , filename, x, y], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    output, errors = p.communicate()
-   line = list(csv.reader(io.StringIO(output.strip()), delimiter=' ', skipinitialspace = True))
+   line = list(csv.reader(io.StringIO(output.strip().decode('utf-8')), delimiter=' ', skipinitialspace = True))
    ra = float(line[0][0])
    dec = float(line[0][1])
    return ra, dec
@@ -2343,7 +2350,7 @@ def sky2xy(filename, ra, dec):
    import subprocess, csv, io
    p = subprocess.Popen(['sky2xy', filename, str(ra), str(dec)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    output, errors = p.communicate()
-   line = list(csv.reader(io.StringIO(output.strip()), delimiter=' ', skipinitialspace = True))
+   line = list(csv.reader(io.StringIO(output.strip().decode('utf-8')), delimiter=' ', skipinitialspace = True))
    x = float(line[0][4])
    y = float(line[0][5])
    return x, y
@@ -2414,7 +2421,7 @@ def xy2skyList(filename, coordList):
 
       p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       output, errors = p.communicate()
-      lines = list(csv.reader(io.StringIO(output.strip()), delimiter=' ', skipinitialspace = True))
+      lines = list(csv.reader(io.StringIO(output.strip().decode('utf-8')), delimiter=' ', skipinitialspace = True))
       for line in lines:
          ra = float(line[0])
          dec = float(line[1])
@@ -2491,7 +2498,7 @@ def readPhotpipeDCMPFile(filename, xy2skyConvertByList = True):
 
    asciiData = headerLine + data
 
-   dataDictFile = csv.DictReader(io.StringIO(asciiData), delimiter=' ', skipinitialspace = True)
+   dataDictFile = csv.DictReader(io.StringIO(asciiData.decode('utf-8')), delimiter=' ', skipinitialspace = True)
 
    # While we're here, let's add the RA and Dec. Don't forget we can only iterate once,
    # so let's create a list of dicts and return it.
