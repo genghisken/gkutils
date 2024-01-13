@@ -3016,7 +3016,7 @@ def calculateHeatMap(dataRows, resolution = 128, chipSize = 10560):
 # 2023-01-03 KWS Get object name from remote nameserver.
 # 2023-01-03 KWS Added a default 2 second timeout and a timeout error trap.
 # 2024-01-07 KWS Added an alternative name, used in Pan-STARRS for the time being.
-def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDate, dbName, timeout = 2, alias = None):
+def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDate, dbName, timeout = 2, alias = None, insertDate = None):
     """getLocalObjectName.
 
     Args:
@@ -3029,6 +3029,7 @@ def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDa
         dbName: Database name
         timeout: Connection timeout
         alias: An alias for the object (used in Pan-STARRS)
+        insertDate: Date inserted
 
     Returns:
         Dictionary of HTTP status, name, counter, info
@@ -3058,6 +3059,9 @@ def getLocalObjectName(nameserverURL, nameserverToken, objectId, ra, dec, flagDa
     payload['survey_database'] = dbName
     if alias:
         payload['internalName'] = alias
+    if insertDate is None:
+        insertDate = datetime.now()
+    payload['insertDate'] = insertDate.strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         r = requests.post(nameserverURL, json=payload, headers={'Authorization': 'Token ' + nameserverToken}, timeout = timeout)
