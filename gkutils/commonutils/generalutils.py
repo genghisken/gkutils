@@ -989,7 +989,7 @@ def coneSearch(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, con
    return message, results
 
 # TODO We have the opportunity to inject another where clause component.
-def coneSearchHTMWithExtraWhereClause(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, conn = None, django = False, prefix = "htm", suffix = "ID", extraWhereClause = None):
+def coneSearchHTMWithExtraWhereClause(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, conn = None, django = False, prefix = "htm", suffix = "ID", extraWhereClause = ''):
    """HTM only cone search.  Assumes a column in the catalogue which by default is called htm<n>ID where <n> is the HTM level.
 
    Args:
