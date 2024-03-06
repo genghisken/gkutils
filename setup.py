@@ -10,6 +10,7 @@ def readme():
         return f.read()
 
 
+# 2024-02-07 KWS Some of these utils require numpy so add to dependencies.
 setup(
     name="gkutils",
     description='A collection useful utilities - mostly related to astronomy',
@@ -31,6 +32,7 @@ setup(
     install_requires=[
           'pyyaml',
           'docopt',
+          'numpy,
       ],
     python_requires='>=3.6',
     entry_points = {

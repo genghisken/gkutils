@@ -988,7 +988,129 @@ def coneSearch(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, con
 
    return message, results
 
+# TODO We have the opportunity to inject another where clause component.
+def coneSearchHTMWithExtraWhereClause(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, conn = None, django = False, prefix = "htm", suffix = "ID", extraWhereClause = None):
+   """HTM only cone search.  Assumes a column in the catalogue which by default is called htm<n>ID where <n> is the HTM level.
 
+   Args:
+        ra:
+        dec:
+        radius:
+        tableName:
+        htmLevel:
+        queryType:
+        conn:
+        django:
+        prefix: HTM column prefix - default: "htm"
+        suffix: HTM column suffix - default: "ID"
+   """
+
+   # 2012-02-02 KWS Require database connections for cone searching
+   import MySQLdb
+
+   # 2012-02-02 KWS Introduced a new SWIG htmCircle library for cone searching
+   from gkhtm import _gkhtm as htmCircle
+
+   # Attempt a cone search of the given tableName.  Use internal models if conn
+   # is None, otherwise use a given database connection (allows it to be called
+   # externally as part of a script).
+
+   # Code returns a list of lists.  First value in sublist is separation.  Second
+   # is the row of data requested from the database.
+
+   message = ""
+
+   if htmLevel not in (16, 20):
+      # We don't support anything other than Level 16 or Level 20 queries
+      return "Must be HTM level 16 or 20", []
+
+   # Check that RA and DEC are in decimal degrees.  If not, assume sexagesimal and attempt to convert
+
+   if ':' in str(ra):
+      ra = sexToDec(ra, ra=True)
+
+
+   if ':' in str(dec):
+      dec = sexToDec(dec, ra=False)
+
+   ra = float(ra)
+   dec = float(dec)
+
+   try:
+      quickColumns = CAT_ID_RA_DEC_COLS[tableName][0]
+   except KeyError as e:
+      return "Table %s not recognised." % tableName, []
+
+   # 2020-07-08 KWS htmCircleRegion has been modified to take two optional paramaters. Because
+   #                of necessity to maintain older SWIG version, parameters cannot be named,
+   #                but prefix and suffix are completely optional. Default values are htm and ID
+   #                if omitted. If you need to pass the suffix only, you MUST specify the prefix
+   #                as well. If you don't want the suffix, pass prefix and "".
+   htmWhereClause = htmCircle.htmCircleRegion(htmLevel, ra, dec, radius, prefix, suffix)
+
+   # We now have a query that returns a SUPERSET.  We need to trim the superset once
+   # the query is done.
+
+   columns = ['*']
+
+   if queryType == QUICK:
+      columns = quickColumns
+
+   query = 'select ' + ','.join(columns) + ' from %s' % tableName + htmWhereClause + extraWhereClause
+   #print query
+
+   results = []
+
+   if conn:
+      # We have a database connection, so use it to make a call to the database
+
+      # DO THE QUERY
+
+      try:
+         if django:
+            cursor = conn.cursor ()
+         else:
+            cursor = conn.cursor (MySQLdb.cursors.DictCursor)
+
+         cursor.execute(query)
+
+         if django:
+            resultSet = [ dict( (d[0],c) for d, c in zip(cursor.description, row) ) for row in cursor ]
+         else:
+            resultSet = cursor.fetchall ()
+
+
+      except MySQLdb.Error as e:
+         return "Error %d: %s" % (e.args[0], e.args[1]), []
+
+
+      if resultSet:
+
+         # Calculate the angular separation for each row
+         for row in resultSet:
+            if tableName == 'tcs_guide_star_cat' or tableName == 'tcs_cat_v_guide_star_ps':
+               # Guide star cat RA and DEC are in RADIANS
+               separation = getAngularSeparation(ra, dec, math.degrees(row[CAT_ID_RA_DEC_COLS[tableName][0][1]]), math.degrees(row[CAT_ID_RA_DEC_COLS[tableName][0][2]]))
+            else:
+               separation = getAngularSeparation(ra, dec, row[CAT_ID_RA_DEC_COLS[tableName][0][1]], row[CAT_ID_RA_DEC_COLS[tableName][0][2]])
+
+            # For HTM only queries, only add the results if the separation is less than the radius.
+            # This is because HTM queries will always be a superset.
+            if separation < radius:
+               results.append([separation, row])
+
+         # Sort by separation
+         results.sort(key=itemgetter(0))
+      else:
+         message = "No matches from %s." % tableName
+   else:
+      message = query
+
+   return message, results
+
+
+
+# TODO We have the opportunity to inject another where clause component.
 # 2016-02-02 KWS Pure HTM conesearch. Does NOT use unit cartesian coords.
 def coneSearchHTM(ra, dec, radius, tableName, htmLevel = 16, queryType = QUICK, conn = None, django = False, prefix = "htm", suffix = "ID"):
    """HTM only cone search.  Assumes a column in the catalogue which by default is called htm<n>ID where <n> is the HTM level.
