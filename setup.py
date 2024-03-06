@@ -32,7 +32,7 @@ setup(
     install_requires=[
           'pyyaml',
           'docopt',
-          'numpy,
+          'numpy',
       ],
     python_requires='>=3.6',
     entry_points = {
