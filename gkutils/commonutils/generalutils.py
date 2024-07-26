@@ -681,6 +681,12 @@ def getAngularSeparation(ra1, dec1, ra2, dec2):
    convert into decimal before doing the calculation.
    """
 
+   angularSeparation = None
+
+   if ra1 is None or ra2 is None or dec1 is None or dec2 is None:
+      # Angular separation can't be calculated.
+      return angularSeparation
+
    if ':' in str(ra1):
       ra1 = sexToDec(ra1, ra=True)
    if ':' in str(dec1):
@@ -697,7 +703,6 @@ def getAngularSeparation(ra1, dec1, ra2, dec2):
    dec1 = float(dec1)
    dec2 = float(dec2)
 
-   angularSeparation = None
 
    if ra1 is not None and ra2 is not None and dec1 is not None and dec2 is not None:
 
@@ -851,6 +856,14 @@ CAT_ID_RA_DEC_COLS = {
    'atlas_v_followup4': [['id', 'ra', 'dec'],3007],
    'atlas_v_followup5': [['id', 'ra', 'dec'],3008],
    'atlas_v_followup6': [['id', 'ra', 'dec'],3009],
+   # 2024-07-26 KWS Added missing ATLAS views.
+   'atlas_v_followup7': [['id', 'ra', 'dec'],3010],
+   'atlas_v_followup8': [['id', 'ra', 'dec'],3011],
+   'atlas_v_followup9': [['id', 'ra', 'dec'],3012],
+   'atlas_v_followup10': [['id', 'ra', 'dec'],3013],
+   'atlas_v_followup11': [['id', 'ra', 'dec'],3014],
+   'atlas_v_followupall': [['id', 'ra', 'dec'],3100],
+   'atlas_v_followupall_with_junk': [['id', 'ra', 'dec'],3101],
    'psdb_web_v_followup_bad_presentation': [['id', 'ra_psf', 'dec_psf'],4000],
    'psdb_web_v_followup_conf_presentation': [['id', 'ra_psf', 'dec_psf'],4001],
    'psdb_web_v_followup_good_presentation': [['id', 'ra_psf', 'dec_psf'],4002],
@@ -1096,7 +1109,7 @@ def coneSearchHTMWithExtraWhereClause(ra, dec, radius, tableName, htmLevel = 16,
 
             # For HTM only queries, only add the results if the separation is less than the radius.
             # This is because HTM queries will always be a superset.
-            if separation < radius:
+            if separation is not None and separation < radius:
                results.append([separation, row])
 
          # Sort by separation
