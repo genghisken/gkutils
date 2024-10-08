@@ -1517,7 +1517,7 @@ def readGenericDataFile(filename, delimiter = ' ', skipLines = 0, fieldnames = N
    # Sometimes the file has a very annoying initial # character on the first line.
    # We need to delete this character or replace it with a space.
 
-   if type(filename).__name__ == 'file' or type(filename).__name__ == 'instance' or type(filename).__name__ == 'GzipFile' or type(filename).__name__ == 'StringIO':
+   if type(filename).__name__ == 'file' or type(filename).__name__ == 'instance' or type(filename).__name__ == 'GzipFile' or type(filename).__name__ == 'StringIO' or type(filename).__name__ ==  'TextIOWrapper':
       f = filename
    else:
       f = open(filename)
@@ -3027,6 +3027,13 @@ def fluxToMicroJansky(adu, exptime, zp):
     factor = 10**(-0.4*(zp-23.9))
     uJy = adu/exptime*factor
     return uJy
+
+
+def microJanskyToABMag(flux):
+    #mag = -2.5 * math.log10(flux/1000000) +8.9
+    mag = -2.5 * math.log10(flux) + 23.9
+    return mag
+
 
 # 2021-11-18 KWS Added code to grab the SFD extinction for PS1 and ATLAS filters.
 def getSFDPanSTARRSATLASExtinction(ra, dec, dustmapDirectory, download = False):
