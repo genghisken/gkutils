@@ -812,6 +812,9 @@ CAT_ID_RA_DEC_COLS = {
    # 2020-02-11 KWS Added Gaia DR2 catalogue
    'tcs_cat_gaia_dr2': [['source_id', 'ra', 'dec'],47],
 
+   # 2025-02-25 KWS Added Gaia DR3 catalogue
+   'tcs_cat_gaia_dr3': [['source_id', 'ra', 'dec'],48],
+
    # PESSTO database catalogues
    # 2014-04-08 KWS Added cbat views for SN and PSN
 
