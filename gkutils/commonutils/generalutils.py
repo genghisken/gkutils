@@ -865,6 +865,9 @@ CAT_ID_RA_DEC_COLS = {
    'atlas_v_followup9': [['id', 'ra', 'dec'],3012],
    'atlas_v_followup10': [['id', 'ra', 'dec'],3013],
    'atlas_v_followup11': [['id', 'ra', 'dec'],3014],
+   # 2025-03-28 KWS Added missing ATLAS views for galactic and duplicates.
+   'atlas_v_followup12': [['id', 'ra', 'dec'],3015],
+   'atlas_v_followup13': [['id', 'ra', 'dec'],3016],
    'atlas_v_followupall': [['id', 'ra', 'dec'],3100],
    'atlas_v_followupall_with_junk': [['id', 'ra', 'dec'],3101],
    'psdb_web_v_followup_bad_presentation': [['id', 'ra_psf', 'dec_psf'],4000],
@@ -2827,19 +2830,23 @@ COORDS_DEC_REGEX = ""
 
 # 2019-04-17 KWS Made the sexagesimal regex a bit more forgiving.
 # 2024-04-10 KWS Allow up to 3 digits + fraction for the search radius.
-#                                h    h               m    m                       s    s     .  f                       (+-)              d    d                    m    m               s    s     .  f                        (radius)
-COORDS_SEX_REGEX = "^([0-2]{0,1}[0-9])[^0-9+\-\.]{0,}([0-5]{0,1}[0-9])[^0-9+\-\.]{0,}([0-5]{0,1}[0-9])(\.[0-9]+){0,1}[^0-9+\-\.]{0,}([+-]){0,1}([0-9]{0,1}[0-9])[^0-9+\-\.]{0,}([0-5]{0,1}[0-9])[^0-9+\-\.]{0,}([0-5]{0,1}[0-9])(\.[0-9]+){0,1}[^0-9+\-\.]{0,}(([0-9][0-9]{0,2}(\.[0-9]+){0,1})){0,1}$"
+# 2025-03-28 KWS Specify sublist to search instead of whole database. Can be list ID or all.
+#                                h    h               m    m                                 s    s     .  f                                (+-)              d    d                    m    m               s    s     .  f                                               (radius = 0-999.f...)                                             list=all or 0-99
+COORDS_SEX_REGEX = "^([0-2]{0,1}[0-9])[^0-9+\\-\\.]{0,}([0-5]{0,1}[0-9])[^0-9+\\-\\.]{0,}([0-5]{0,1}[0-9])(\\.[0-9]+){0,1}[^0-9+\\-\\.]{0,}([+-]){0,1}([0-9]{0,1}[0-9])[^0-9+\\-\\.]{0,}([0-5]{0,1}[0-9])[^0-9+\\-\\.]{0,}([0-5]{0,1}[0-9])(\\.[0-9]+){0,1}[^0-9+\\-\\.a-z=]{0,}(([0-9][0-9]{0,2}(\\.[0-9]+){0,1})){0,1}[^0-9+\\-\\.a-z=]{0,}(list=(all|[0-9]+)){0,1}$"
+#COORDS_SEX_REGEX = "^([0-2]{0,1}[0-9])[^0-9+\-\.]{0,}([0-5]{0,1}[0-9])[^0-9+\-\.]{0,}([0-5]{0,1}[0-9])(\.[0-9]+){0,1}[^0-9+\-\.]{0,}([+-]){0,1}([0-9]{0,1}[0-9])[^0-9+\-\.]{0,}([0-5]{0,1}[0-9])[^0-9+\-\.]{0,}([0-5]{0,1}[0-9])(\.[0-9]+){0,1}[^0-9+\-\.]{0,}(([0-9][0-9]{0,2}(\.[0-9]+){0,1})){0,1}$"
 COORDS_SEX_REGEX_COMPILED = re.compile(COORDS_SEX_REGEX)
 
 #COORDS_DEC_REGEX = "^([0-9]+(\.[0-9]+){0,1})[^0-9+\-]{0,5}([+-]{0,1}[0-9]+(\.[0-9]+){0,1})[^0-9 ]{0,1}( +([0-9][0-9]{0,1})){0,1}"
 # 2019-04-17 KWS Made the decimal regex a bit more forgiving.
 # 2024-04-10 KWS Allow up to 3 digits + fraction for the search radius.
-#                            d.f                           (+-)            d.f                         (radius)
-COORDS_DEC_REGEX = "^([0-9]+(\.[0-9]+){0,1})[^0-9+\-]{0,}([+-]{0,1}[0-9]+(\.[0-9]+){0,1})[^0-9]{0,}(([0-9][0-9]{0,2}(\.[0-9]+){0,1})){0,1}$"
+# 2025-03-28 KWS Specify sublist to search instead of whole database. Can be list ID or all.
+#                            d.f                           (+-)            d.f                         (radius = 0-999.f...)                                                   list=all or 0-99
+COORDS_DEC_REGEX = "^([0-9]+(\\.[0-9]+){0,1})[^0-9+\\-]{0,}([+-]{0,1}[0-9]+(\\.[0-9]+){0,1})[^0-9+\\-\\.a-z=]{0,}(([0-9][0-9]{0,2}(\\.[0-9]+){0,1})){0,1}[^0-9+\\-\\.a-z=]{0,}(list=(all|[0-9]+)){0,1}$"
+#COORDS_DEC_REGEX = "^([0-9]+(\.[0-9]+){0,1})[^0-9+\-]{0,}([+-]{0,1}[0-9]+(\.[0-9]+){0,1})[^0-9]{0,}(([0-9][0-9]{0,2}(\.[0-9]+){0,1})){0,1}$"
 COORDS_DEC_REGEX_COMPILED = re.compile(COORDS_DEC_REGEX)
 
 # 2019-04-17 KWS Made the name search more forgiving and extended it to ZTF.
-NAME_REGEX = "^(AT|SN|ATLAS|ASASSN-|ZTF|PS([1][\-]){0,1}){0,1} {0,1}([2][0]){0,1}([0-9][0-9][a-z]{1,7}|[0-9][0-9][A-Z])$"
+NAME_REGEX = "^(AT|SN|ATLAS|ASASSN-|ZTF|PS([1][\\-]){0,1}){0,1} {0,1}([2][0]){0,1}([0-9][0-9][a-z]{1,7}|[0-9][0-9][A-Z])$"
 NAME_REGEX_COMPILED = re.compile(NAME_REGEX)
 
 def getObjectNamePortion(inputString):
@@ -2861,9 +2868,10 @@ def getObjectNamePortion(inputString):
 
 # 2019-04-30 KWS Changed the order of the match test. Try decimal then sexagesimal.
 #                Also check the values of each sexagesimal field.
+# 2025-03-28 KWS Added ability to extract the detection list from the regular expression.
 def getCoordsAndSearchRadius(inputString):
     """getCoordsAndSearchRadius.
-
+   
     Args:
         inputString:
     """
@@ -2871,14 +2879,16 @@ def getCoordsAndSearchRadius(inputString):
     ra = None
     dec = None
     radius = None
+    detectionlist = None
 
     sex = COORDS_SEX_REGEX_COMPILED.search(inputString)
     decimal = COORDS_DEC_REGEX_COMPILED.search(inputString)
-
+  
     if decimal:
         ra = decimal.group(1)
         dec = decimal.group(3)
         radius = decimal.group(5)
+        detectionlist = decimal.group(9)
         try:
             if float(ra) > 360.0 or float(ra) < 0.0 or float(dec) < -90.0 or float(dec) > 90.0:
                 coords = {}
@@ -2886,6 +2896,7 @@ def getCoordsAndSearchRadius(inputString):
                 coords['ra'] = ra
                 coords['dec'] = dec
                 coords['radius'] = radius
+                coords['detectionlist'] = detectionlist
 
         except ValueError as e:
             coords = {}
@@ -2900,6 +2911,7 @@ def getCoordsAndSearchRadius(inputString):
         mn = sex.group(7)
         sec = sex.group(8)
         ffdec = sex.group(9) if sex.group(9) is not None else ''
+        detectionlist = sex.group(14)
         try:
             if int(hh) > 24 or int(mm) > 59 or int(ss) > 59 or int(deg) > 90 or int(mn) > 59 or int(sec) > 59:
                 coords = {}
@@ -2910,6 +2922,7 @@ def getCoordsAndSearchRadius(inputString):
                 coords['ra'] = ra
                 coords['dec'] = dec
                 coords['radius'] = radius
+                coords['detectionlist'] = detectionlist
         except ValueError as e:
             coords = {}
 
