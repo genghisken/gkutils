@@ -870,6 +870,7 @@ CAT_ID_RA_DEC_COLS = {
    'atlas_v_followup13': [['id', 'ra', 'dec'],3016],
    'atlas_v_followupall': [['id', 'ra', 'dec'],3100],
    'atlas_v_followupall_with_junk': [['id', 'ra', 'dec'],3101],
+   'atlas_v_followup0': [['id', 'ra', 'dec'],3102],
    'psdb_web_v_followup_bad_presentation': [['id', 'ra_psf', 'dec_psf'],4000],
    'psdb_web_v_followup_conf_presentation': [['id', 'ra_psf', 'dec_psf'],4001],
    'psdb_web_v_followup_good_presentation': [['id', 'ra_psf', 'dec_psf'],4002],
