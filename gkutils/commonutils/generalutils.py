@@ -881,6 +881,8 @@ CAT_ID_RA_DEC_COLS = {
    'psdb_web_v_followup_tbd_presentation': [['id', 'ra_psf', 'dec_psf'],4007],
    'psdb_web_v_followup_fast_presentation': [['id', 'ra_psf', 'dec_psf'],4008],
    'psdb_web_v_followup_all_presentation': [['id', 'ra_psf', 'dec_psf'],4100],
+   # 2025-03-31 KWS Added new Pan-STARRS all, including eyeball and garbage.
+   'psdb_web_v_followup_all_with_eyeball_and_garbage_presentation': [['id', 'ra_psf', 'dec_psf'],4101],
 
    # 2023-07-04 KWS Add a few extra catalogues from ePESSTO+ crossmatch_catalogues table. Start at 5000 for catalogue ID.
    'tcs_cat_2mass_psc_final': [['id', 'ra', 'decl'],5000],
