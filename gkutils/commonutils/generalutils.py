@@ -2457,6 +2457,7 @@ def find(pattern, path, directoriesOnly = False):
 # 2015-03-19 KWS Added new flags to the flags table.
 # 2016-01-19 KWS Added new mpc flag to the flags table.  Altered name of 'mover' to eph (ephemeris).
 # 2016-06-07 KWS Added new tns (nameserver) and nondets (non detection stamp request) flags
+# 2025-05-22 KWS Added pmcheck for Gaia proper motion check.
 PROCESSING_FLAGS = {'unprocessed':    0x0000,
                     'brightstar':     0x0001,
                     'convolution':    0x0002,
@@ -2470,7 +2471,8 @@ PROCESSING_FLAGS = {'unprocessed':    0x0000,
                     'mpc':            0x0200,
                     'tns':            0x0400,
                     'nondets':        0x0800,
-                    'moons':          0x1000}
+                    'moons':          0x1000,
+                    'pmcheck':        0x2000}
 
 
 def xy2sky(filename, x, y):
@@ -2813,6 +2815,33 @@ def isObjectInsideATLASFootprint(objectRA, objectDec, fpRA, fpDec, separation = 
         inside = False
 
     return inside
+
+
+# 2025-07-06 KWS Completely new footprint checker code. We send the ATLAS exposure dimensions as part of the query
+#                so it doesn't matter what the size of the footprint is.  Fairly crude calculation but it's fast.
+#                Assumes equatorial mount (i.e. Chip x and y aligned with RA and Dec).
+def isObjectInsideATLASFootprintGeneric(objectRA, objectDec, fpRA, fpDec, nx, ny, scale):
+    """
+    fpRA, fpDec: center of FOV, in degrees
+    objectRA, objectDec: target point coordinates, in degrees
+    fovWidth, fovHeight: FOV size along RA and Dec axes, in degrees
+    Returns True if (objectRA, objectDec) is inside the rectangular FOV.
+    """
+
+    fovWidth = nx * scale
+    fovHeight = ny * scale
+
+    # 1. RA difference, wrapped to [-180, +180]
+    delta_ra = (objectRA - fpRA + 180) % 360 - 180
+
+    # 2. Project RA separation onto sky
+    delta_x = delta_ra * math.cos(math.radians(fpDec))
+
+    # 3. Dec difference
+    delta_y = objectDec - fpDec
+
+    # 4. Check within half-width and half-height
+    return (abs(delta_x) <= fovWidth / 2) and (abs(delta_y) <= fovHeight / 2)
 
 
 
