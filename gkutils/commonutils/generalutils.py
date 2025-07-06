@@ -2828,8 +2828,8 @@ def isObjectInsideATLASFootprintGeneric(objectRA, objectDec, fpRA, fpDec, nx, ny
     Returns True if (objectRA, objectDec) is inside the rectangular FOV.
     """
 
-    fovWidth = nx * scale
-    fovHeight = ny * scale
+    fovWidth = nx * scale / 3600
+    fovHeight = ny * scale / 3600
 
     # 1. RA difference, wrapped to [-180, +180]
     delta_ra = (objectRA - fpRA + 180) % 360 - 180
