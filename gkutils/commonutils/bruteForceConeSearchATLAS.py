@@ -2,7 +2,7 @@
 """Is object in the list of ATLAS exposures?
 
 Usage:
-  %s <atlasCentresFile> <inputCoordsFile> [--searchradius=<searchradius>] [--footprints] [--red] [--checkmjd] [--mjdtolerance=<mjdtolerance>] [--debug] [--auxparams=<auxparams>]
+  %s <atlasCentresFile> <inputCoordsFile> [--searchradius=<searchradius>] [--footprints] [--red] [--checkmjd] [--mjdtolerance=<mjdtolerance>] [--debug] [--auxparams=<auxparams>] [--distance] [--daysbefore=<daysbefore>] [--daysafter=<daysafter>]
   %s (-h | --help)
   %s --version
 
@@ -14,8 +14,11 @@ Options:
   --red                           Give me the full ATLAS reduced file locations.
   --checkmjd                      Only return exposures with MJDs within mjdtolerance.
   --mjdtolerance=<mjdtolerance>   Compare footprint MJD with input MJD (days). [default: 1.0]
+  --daysbefore=<daysbefore>       Instead of symmetric MJD check, use days before and days after. If both max and min set, this overrides mjdtolerance.
+  --daysafter=<daysafter>         Instead of symmetric MJD check, use days before and days afteD. If both max and min set, this overrides mjdtolerance.
   --auxparams=<auxparams>         Spit out some auxiliary parameters from the ATLAS exposures list. Comma separated. No spaces. Ignored if not present.
   --debug                         Spit out some debug.
+  --distance                      Spit out the angular separation between the object and the exposure boresight in arcsec.
 
 
 Example:
@@ -31,9 +34,9 @@ import sys
 __doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
 import os, shutil, re
-from gkutils.commonutils import Struct, cleanOptions, readGenericDataFile, coords_sex_to_dec, bruteForceGenericConeSearch, isObjectInsideATLASFootprint
+from gkutils.commonutils import Struct, cleanOptions, readGenericDataFile, coords_sex_to_dec, bruteForceGenericConeSearch, isObjectInsideATLASFootprint, isObjectInsideATLASFootprintGeneric, getAngularSeparation
 
-atlas_regex = '(0[1234]a)([56][0-9]{4})o([0-9]{4})([A-Za-z])'
+atlas_regex = '(0[12345][ar])([56][0-9]{4})o([0-9]{4})([A-Za-z])'
 atlas_regex_compiled = re.compile(atlas_regex)
 
 
@@ -85,9 +88,30 @@ def main(argv = None):
                 ra, dec = coords_sex_to_dec(row['ra'], row['dec'])
 
             for r in atlasCentres:
-                if isObjectInsideATLASFootprint(ra, dec, float(r['ra']), float(r['dec'])):
+                # 2025-10-03 KWS If 01a, 02a, 03a, 04a, assume square footprint with usual measurement.
+                #                If 05r, use hard wired rectangular footprint.
+                if r['expname'][0:3] == '05r':
+                    nx, ny, scale = (9576, 6376, 1.256)
+                else:
+                    nx, ny, scale = (10560, 10560, 1.863)
+
+                if isObjectInsideATLASFootprintGeneric(ra, dec, float(r['ra']), float(r['dec']), nx, ny, scale):
+                    if options.distance:
+                        distance = getAngularSeparation(ra, dec, float(r['ra']), float(r['dec']))
                     if options.checkmjd:
-                        if abs(float(r['mjd']) - float(row['mjd'])) < float(options.mjdtolerance):
+                        if options.daysbefore and options.daysafter and float(r['mjd']) > (float(row['mjd']) - float(options.daysbefore)) and float(r['mjd']) < (float(row['mjd']) + float(options.daysafter)):
+                            matches = doRegexMatch(r['expname'])
+                            if matches:
+                                red = ''
+                                if options.red:
+                                    red = '/atlas/red/' + matches['camera'] + '/' + matches['mjd'] + '/' + r['expname'] + '.fits.fz'
+                                    print(row['name'], red)
+                                else:
+                                    print(row['name'], r['expname'])
+                            else:
+                                print(row['name'], r['expname'])
+
+                        elif abs(float(r['mjd']) - float(row['mjd'])) < float(options.mjdtolerance):
                             matches = doRegexMatch(r['expname'])
                             if matches:
                                 red = ''
@@ -119,7 +143,10 @@ def main(argv = None):
                                     print()
                                     #print(row['name'], r['expname'])
                         else:
-                            print(row['name'], r['expname'])
+                            if options.distance:
+                                print(row['name'], r['expname'], "%.2f" % distance)
+                            else:
+                                print(row['name'], r['expname'])
 
 
     else:

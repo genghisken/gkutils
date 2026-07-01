@@ -815,6 +815,9 @@ CAT_ID_RA_DEC_COLS = {
    # 2025-02-25 KWS Added Gaia DR3 catalogue
    'tcs_cat_gaia_dr3': [['source_id', 'ra', 'dec'],48],
 
+   # 2026-01-13 KWS Added Pan-STARRS skycell tessellation
+   'tcs_cat_ps_tessellation': [['skycell', 'ra', 'dec'],49],
+
    # PESSTO database catalogues
    # 2014-04-08 KWS Added cbat views for SN and PSN
 
@@ -3076,12 +3079,33 @@ def fluxToMicroJansky(adu, exptime, zp):
     uJy = adu/exptime*factor
     return uJy
 
+def fluxToNonoJansky(adu, exptime, zp):
+    """fluxToNonoJansky.
+
+    Args:
+        adu: flux in adu - e.g. psf_inst_flux
+        exptime: exposure time
+        zp: zeropoint
+    """
+
+    factor = 10**(-0.4*(zp-31.4))
+    nJy = adu/exptime*factor
+    return nJy
+
 
 def microJanskyToABMag(flux):
     #mag = -2.5 * math.log10(flux/1000000) +8.9
     mag = -2.5 * math.log10(flux) + 23.9
     return mag
 
+def nanoJanskyToABMag(flux):
+    #mag = -2.5 * math.log10(flux/1000000) +8.9
+    mag = -2.5 * math.log10(flux) + 31.4
+    return mag
+
+def abMagToNanoJansky(mag):
+    flux = 10**((mag - 31.4)/-2.5)
+    return flux
 
 # 2021-11-18 KWS Added code to grab the SFD extinction for PS1 and ATLAS filters.
 def getSFDPanSTARRSATLASExtinction(ra, dec, dustmapDirectory, download = False):
