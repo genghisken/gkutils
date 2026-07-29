@@ -28,10 +28,11 @@ Example:
    %s all_atlas_exposures.tst eris_coordinates_and_mjds.csv --checkmjd --red --footprints
    %s all_atlas_exposures.tst eris_coordinates_and_mjds.csv --checkmjd --red --footprints --mjdtolerance=0.5
    %s ~/atlas/volume_limited_survey/all_co_exposures_20210520_mjd_58940_58969.tst ~/atlas/volume_limited_survey/FakerPositions_10.lis --auxparams=mag5sig --footprints
+   %s ~/atlas/daily_exposures/atlas_co_exposures_lite.tst test.csv --footprints --checkmjd --daysbefore=50 --daysafter=100 --red
 
 """
 import sys
-__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
+__doc__ = __doc__ % (sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0], sys.argv[0])
 from docopt import docopt
 import os, shutil, re
 from gkutils.commonutils import Struct, cleanOptions, readGenericDataFile, coords_sex_to_dec, bruteForceGenericConeSearch, isObjectInsideATLASFootprint, isObjectInsideATLASFootprintGeneric, getAngularSeparation
