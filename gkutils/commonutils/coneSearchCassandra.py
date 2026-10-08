@@ -51,6 +51,8 @@ from datetime import datetime
 import os
 
 
+# 2026-10-08 KWS Specified the actual racol and deccol in call to coneSearchHTMCassandra,
+#                since they will not always be ra and dec. Case sensitive (e.g. RA, Dec).
 def getLCData(options, session, coordslist):
     table = options.table
     radius = float(options.radius)
@@ -61,7 +63,7 @@ def getLCData(options, session, coordslist):
 
     counter = 0
     for c in coordslist:
-        data = coneSearchHTMCassandra(session, c['ra'], c['dec'], radius, table, refineResults = True, columns = columns)
+        data = coneSearchHTMCassandra(session, c['ra'], c['dec'], radius, table, racol=options.colra, deccol=options.coldec, refineResults = True, columns = columns)
         if data:
             if options.saveresults:
                 try:
